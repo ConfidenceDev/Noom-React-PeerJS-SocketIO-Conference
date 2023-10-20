@@ -5,15 +5,14 @@ import StudentImg from "../../assets/student.png";
 import Logo from "../../assets/video.png";
 import "./login.css";
 import { useDispatch } from "react-redux";
-import { toggleValue } from "../../store";
 
 export default function Login() {
   const [userId, setUserId] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleToggle = () => {
-    dispatch(toggleValue());
+  const handleLogin = () => {
+    dispatch(toggleLogin());
   };
 
   const loadRoom = () => {
@@ -29,6 +28,8 @@ export default function Login() {
   function loadUser() {
     if (userId === null || userId === "")
       return toast.error("Please enter your student id!");
+
+    handleLogin();
 
     toast.success("Success, Joining meeting...");
     navigate(`/room/${userId}`);

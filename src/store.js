@@ -18,7 +18,7 @@ const reducer = (state = initialState, action) => {
 
 const store = createStore(reducer);
 
-export const toggleValue = () => {
+export const toggleLogin = () => {
   return {
     type: "LOGGED_IN",
   };

@@ -24,7 +24,8 @@ import Modal from "../modal/modal";
 import "../modal/modal.css";
 import io from "socket.io-client";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleLogin } from "../../store";
 
 const ENDPOINT = "http://localhost:5000";
 let socket = null;
@@ -43,9 +44,12 @@ export default function Room() {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [roomDetails, setRoomDetails] = useState("");
-  const value = useSelector((state) => state.value);
+  const loggedIn = useSelector((state) => state.value);
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    //if (!loggedIn) return navigate(`/`);
+
     socket = io(ENDPOINT);
     socket.on("connect", () => {
       myId = socket.id;
@@ -61,7 +65,6 @@ export default function Room() {
       setRoomDetails(data);
     });
 
-    console.log("REDUX: " + value);
     /*const handleBeforeUnload = (e) => {
       e.preventDefault();
       socket.off("connect");
@@ -101,7 +104,6 @@ export default function Room() {
     setMeetingDetails(!meetingDetails);
     setParticipants(false);
   };
-
   const leaveMeeting = () => {
     if (socket) {
       socket.off("connect");
@@ -109,6 +111,7 @@ export default function Room() {
     }
 
     toast.success("You left the meeting!");
+    dispatch(toggleLogin());
     navigate(`/`);
   };
 
