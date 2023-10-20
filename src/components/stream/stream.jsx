@@ -26,7 +26,6 @@ export default function Stream(props) {
   const [isPhone, setIsPhone] = useState(false);
   const [instructor, setInstructor] = useState("");
   const [peers, setPeers] = useState([]);
-  const [currentPeer, setCurrentPeer] = useState(null);
   const videoGridRef = useRef();
   const presentationRef = useRef();
 
@@ -40,29 +39,27 @@ export default function Stream(props) {
         const getUserScreenOptions = { cursor: true, audio: true };
 
         try {
-          let currentPeer = null;
-
           if (screen) {
             const stream = await navigator.mediaDevices.getDisplayMedia(
               getUserScreenOptions
             );
             isPresentation = true;
-
             socket.emit("room-board", room, myId);
+            setInstructor(myId);
             addVideoStream(myId, stream, isPresentation);
-            if (currentPeer) closePeer(currentPeer);
             initializePeer(stream);
             stream
               .getVideoTracks()[0]
               .addEventListener("ended", () => toggle());
           } else {
-            const stream = await navigator.mediaDevices.getUserMedia(
-              getUserMediaOptions
-            );
+            const nav =
+              navigator.mediaDevices.getUserMedia ||
+              navigator.mediaDevices.webkitGetUserMedia ||
+              navigator.mediaDevices.mozGetUserMedia ||
+              navigator.mediaDevices.msGetUserMedia;
+            const stream = await nav(getUserMediaOptions);
             isPresentation = false;
-
             addVideoStream(myId, stream, isPresentation);
-            if (currentPeer) closePeer(currentPeer);
             initializePeer(stream);
           }
         } catch (error) {
@@ -72,27 +69,30 @@ export default function Stream(props) {
       };
 
       const initializePeer = (stream) => {
-        if (currentPeer) closePeer(currentPeer);
-
         const peer = new Peer(myId, {
           host: "localhost",
           port: 5000,
           path: "/peerjs",
         });
+        loadPeerListeners(peer, stream);
+      };
 
+      const loadPeerListeners = (peer, stream) => {
         peer.on("open", (id) => {
           console.log(id);
 
           socket.on("room-board", (userID) => {
             console.log(userID);
             setInstructor(userID);
+            removeStream(userID);
+            //connectToNewUser(peer, stream, userID);
           });
 
           socket.on("user-connected", (userID) => {
             connectToNewUser(peer, stream, userID);
           });
 
-          socket.on("user-disconnected", (userID) => {
+          const removeStream = (userID) => {
             const peer = peers.find((peer) => peer.id === userID);
             if (peer) {
               peer.peer.destroy();
@@ -101,6 +101,10 @@ export default function Stream(props) {
               prevPeers.filter((peer) => peer.id !== userID)
             );
             removeVideoElement(userID);
+          };
+
+          socket.on("user-disconnected", (userID) => {
+            removeStream(userID);
           });
 
           socket.on("message", (msg) => {
@@ -126,22 +130,7 @@ export default function Stream(props) {
             addVideoStream(call.peer, userVideoStream, false);
           });
         });
-
-        setCurrentPeer(peer);
       };
-
-      const closePeer = () => {
-        /*console.log(currentPeer);
-
-        socket.off("room-board");
-        socket.off("user-connected");
-        socket.off("user-disconnected");
-        socket.off("message");
-        if (currentPeer) currentPeer.destroy();*/
-
-        console.log(currentPeer);
-      };
-
       initializeMedaia();
     }
 

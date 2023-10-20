@@ -49,8 +49,8 @@ io.on("connection", (socket) => {
 
     socket.on("room-board", (roomId, userId) => {
       roomPresentations[roomId] = userId;
-      io.to(roomId).emit("room-board", roomPresentations[roomId]);
-
+      //io.to(roomId).emit("room-board", roomPresentations[roomId]);
+      socket.broadcast.to(roomId).emit("room-board", roomPresentations[roomId]);
       console.log(roomPresentations);
     });
 

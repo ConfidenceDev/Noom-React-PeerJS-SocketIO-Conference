@@ -5,6 +5,7 @@ import StudentImg from "../../assets/student.png";
 import Logo from "../../assets/video.png";
 import "./login.css";
 import { useDispatch } from "react-redux";
+import { toggleLogin } from "../../store";
 
 export default function Login() {
   const [userId, setUserId] = useState("");
