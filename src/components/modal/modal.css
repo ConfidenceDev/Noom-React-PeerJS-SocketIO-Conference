@@ -1,0 +1,87 @@
+:root {
+  --some-white: rgb(250, 249, 249);
+  --bg-blue: #16285d;
+}
+
+.modal,
+.overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+}
+
+.overlay {
+  background: rgba(49, 49, 49, 0.8);
+}
+.modal-content {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1.4;
+  background: #f1f1f1;
+  padding: 16px;
+  border-radius: 3px;
+  max-width: 600px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-top {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.modal-top .modal-header {
+  font-weight: bold;
+  font-size: 1.3em;
+}
+
+p,
+label {
+  font-size: 1.2em;
+}
+
+.meeting-url {
+  color: var(--bg-blue);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.copy-cover {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: var(--bg-blue);
+  color: white;
+}
+
+.copy-cover:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.copy-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.close-btn {
+  width: 24px;
+  height: 24px;
+}
+
+.close-btn:hover {
+  opacity: 0.6;
+  cursor: pointer;
+}

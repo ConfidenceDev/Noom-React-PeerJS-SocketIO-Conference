@@ -1,0 +1,133 @@
+:root {
+  --some-white: rgb(250, 249, 249);
+  --bg-blue: #16285d;
+  --chat: rgb(212, 211, 211);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-nav {
+  width: 100%;
+  height: 13vh;
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 30px var(--box);
+}
+
+.bottom-nav > div:nth-child(2) {
+  margin-right: 64px;
+}
+
+.bottom-nav > div:nth-last-child(2) {
+  margin-left: 64px;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  margin: 0 4px;
+  font-size: 8px;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  cursor: pointer;
+}
+
+.nav-btn label {
+  text-align: center;
+}
+
+.nav-icon {
+  width: 42px;
+  height: 42px;
+  background-color: var(--bg-blue);
+  border-radius: 50%;
+  padding: 10px;
+}
+
+.nav-leave-icon {
+  width: 42px;
+  height: 42px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  padding: 10px;
+}
+
+.mem-cover {
+  width: 38px;
+  height: 38px;
+  background-color: var(--bg-blue);
+  border-radius: 50%;
+  padding: 4px;
+  gap: 1px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.mem-cover label {
+  margin: 0;
+  padding: 0;
+  font-size: 0.9em;
+  text-align: center;
+  font-weight: bold;
+}
+
+.mem-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.nav-icon:hover,
+.nav-leave-icon:hover {
+  opacity: 0.6;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 1057px) {
+  .bottom-nav {
+    overflow-x: scroll;
+    overflow-y: hidden;
+  }
+
+  .nav-icon,
+  .mem-cover,
+  .nav-leave-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-btn {
+    font-size: 4px;
+  }
+
+  .nav-icon {
+    padding: 8px;
+  }
+
+  .mem-cover label {
+    font-size: 0.2em;
+  }
+
+  .bottom-nav > div:nth-child(2) {
+    margin-right: 48px;
+  }
+
+  .bottom-nav > div:nth-last-child(2) {
+    margin-left: 48px;
+  }
+}
