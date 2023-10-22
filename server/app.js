@@ -39,7 +39,6 @@ io.on("connection", (socket) => {
 
     socket.join(roomId);
     socket.emit("room-details", meeting_details);
-    socket.emit("room-board-on", roomPresentations[roomId] || {});
 
     const room = io.sockets.adapter.rooms.get(roomId);
     const numberOfMembers = room ? room.size : 0;

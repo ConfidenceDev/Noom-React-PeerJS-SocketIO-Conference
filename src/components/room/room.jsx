@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./room.css";
 import {
@@ -19,7 +19,11 @@ import { FaVolumeMute } from "react-icons/fa";
 import { GiBootKick } from "react-icons/gi";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { IoExit } from "react-icons/io5";
-import Stream from "../stream/stream";
+import { GrSend } from "react-icons/gr";
+import { AiOutlineClose } from "react-icons/ai";
+import UserImg from "../../assets/user1.png";
+import Peer from "peerjs";
+import { v4 as uuidv4 } from "uuid";
 import Modal from "../modal/modal";
 import "../modal/modal.css";
 import io from "socket.io-client";
@@ -31,6 +35,13 @@ const ENDPOINT = "http://localhost:5000";
 let socket = null;
 let myId;
 
+let currentStream;
+let videoStream;
+//let isTutor = false;
+let instructor = null;
+let loaded = false;
+//let board = false;
+
 export default function Room() {
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
@@ -39,13 +50,49 @@ export default function Room() {
   const [meetingDetails, setMeetingDetails] = useState(false);
   const [screen, setScreen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
   const { room } = useParams();
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [roomDetails, setRoomDetails] = useState("");
   const loggedIn = useSelector((state) => state.value);
   const dispatch = useDispatch();
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [isPhone, setIsPhone] = useState(false);
+  const [board, setBoard] = useState(false);
+  const [peers, setPeers] = useState([]);
+  const videoGridRef = useRef();
+  const presentationRef = useRef();
+
+  let uniqueId = uuidv4();
+  const nav =
+    navigator.mediaDevices.getUserMedia ||
+    navigator.mediaDevices.webkitGetUserMedia ||
+    navigator.mediaDevices.mozGetUserMedia ||
+    navigator.mediaDevices.msGetUserMedia;
+  const getUserMediaOptions = { video: true, audio: true };
+  const getUserScreenOptions = { cursor: true, audio: true };
+
+  if (screen && !loaded) {
+    loaded = screen;
+    console.log(screen, loaded);
+
+    navigator.mediaDevices
+      .getDisplayMedia(getUserScreenOptions)
+      .then((stream) => {
+        socket.emit("room-board-on", room, myId);
+        currentStream = stream;
+        addBoardStream(myId, stream);
+        stream.getVideoTracks()[0].addEventListener("ended", () => {
+          loaded = false;
+          toggleBoard();
+        });
+      })
+      .catch((error) => {
+        toast.error("Error accessing media:", error);
+        console.error("Error accessing media:", error);
+      });
+  }
 
   useEffect(() => {
     //if (!loggedIn) return navigate(`/`);
@@ -53,42 +100,184 @@ export default function Room() {
     socket = io(ENDPOINT);
     socket.on("connect", () => {
       myId = socket.id;
-      setIsConnected(!isConnected);
       socket.emit("join-room", room, myId);
+
+      socket.on("nom", (data) => {
+        setMembers(data.toString());
+      });
+
+      socket.on("room-details", (data) => {
+        setRoomDetails(data);
+      });
+
+      nav(getUserMediaOptions)
+        .then((stream) => {
+          socket.emit("room-board-off", room, myId);
+          videoStream = stream;
+          currentStream = stream;
+          initializePeer();
+          addVideoStream(myId, stream);
+        })
+        .catch((error) => {
+          toast.error("Error accessing media:", error);
+          console.error("Error accessing media:", error);
+        });
+
+      const initializePeer = () => {
+        const peer = new Peer(myId, {
+          host: "localhost",
+          port: 5000,
+          path: "/peerjs",
+        });
+        loadPeerListeners(peer, currentStream);
+      };
+
+      const loadPeerListeners = (peer, stream) => {
+        peer.on("open", (id) => {
+          console.log("MY ID: " + id);
+
+          socket.on("room-board-on", (userID) => {
+            console.log("ON: " + userID);
+            connectToNewUser(peer, stream, true, userID);
+          });
+
+          socket.on("room-board-off", (userID) => {
+            if (!userID) {
+              console.log("OFF: " + userID);
+              removeBoardStream();
+            }
+          });
+
+          socket.on("user-connected", (userID) => {
+            console.log("Connecting to: " + userID);
+            connectToNewUser(peer, stream, false, userID);
+          });
+
+          socket.on("user-disconnected", (userID) => {
+            removeStream(userID);
+          });
+
+          const removeStream = (userID) => {
+            const peer = peers.find((peer) => peer.id === userID);
+            if (peer) {
+              peer.peer.destroy();
+            }
+            setPeers((prevPeers) =>
+              prevPeers.filter((peer) => peer.id !== userID)
+            );
+            removeVideoStream(userID);
+          };
+
+          socket.on("message", (msg) => {
+            if (msg.userId === myId) msg.username = "You";
+            else msg.username = msg.userId.substring(0, 6);
+
+            setMessages((prevMessages) => [...prevMessages, msg]);
+          });
+        });
+
+        peer.on("call", (call) => {
+          call.answer(currentStream);
+          call.on("stream", (userVideoStream) => {
+            addVideoStream(call.peer, userVideoStream);
+          });
+        });
+      };
     });
 
-    socket.on("nom", (data) => {
-      setMembers(data.toString());
-    });
-
-    socket.on("room-details", (data) => {
-      setRoomDetails(data);
-    });
-
-    /*const handleBeforeUnload = (e) => {
-      e.preventDefault();
-      socket.off("connect");
-      socket.disconnect();
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);*/
-
+    handleResize();
+    window.addEventListener("resize", handleResize);
     return () => {
+      window.removeEventListener("resize", handleResize);
       socket.off("connect");
       socket.disconnect();
-      //window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [peers]);
 
-  const toggle = () => {
+  const handleResize = () => {
+    setIsPhone(window.innerWidth < 1057);
+  };
+
+  const connectToNewUser = (peer, stream, board, userID) => {
+    const call = peer.call(userID, stream);
+    const peerRef = { id: userID, peer: call };
+    setPeers((prevPeers) => [...prevPeers, peerRef]);
+
+    call.on("stream", (userVideoStream) => {
+      if (board) return addBoardStream(userID, stream);
+
+      addVideoStream(call.peer, userVideoStream);
+    });
+
+    call.on("close", () => {
+      setPeers((prevPeers) => prevPeers.filter((peer) => peer.id !== userID));
+    });
+  };
+
+  const addBoardStream = (userID, stream) => {
+    instructor = userID;
+    //board = true;
+    setBoard(true);
+    if (presentationRef.current) presentationRef.current.srcObject = stream;
+  };
+
+  const removeBoardStream = () => {
+    //board = false;
+    setBoard(false);
+    instructor = null;
+    if (presentationRef.current) presentationRef.current.srcObject = null;
+  };
+
+  const addVideoStream = (userID, stream) => {
+    removeVideoStream(userID);
+    const videoElement = document.createElement("video");
+    videoElement.srcObject = stream;
+    videoElement.id = userID;
+    videoElement.setAttribute("autoplay", "");
+    videoElement.setAttribute("playsinline", "");
+    videoElement.addEventListener("loadedmetadata", () => {
+      videoElement.play();
+    });
+
+    if (videoGridRef.current) videoGridRef.current.append(videoElement);
+  };
+
+  const removeVideoStream = (userID) => {
+    const existingVideoElement = document.getElementById(userID);
+    if (existingVideoElement) existingVideoElement.remove();
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSendMessage();
+    }
+  };
+
+  const handleSendMessage = () => {
+    socket.emit("message", message);
+    setMessage("");
+  };
+
+  const toggleBoard = () => {
     setScreen(!screen);
   };
 
   const toggleVideo = () => {
-    setVideoEnabled(!videoEnabled);
+    const videoElement = document.getElementById(myId);
+    if (videoElement) {
+      const videoTrack = videoElement.srcObject.getVideoTracks()[0];
+      if (videoTrack) videoTrack.enabled = !videoEnabled;
+      setVideoEnabled(!videoEnabled);
+    }
   };
 
   const toggleAudio = () => {
-    setAudioEnabled(!audioEnabled);
+    const videoElement = document.getElementById(myId);
+    if (videoElement) {
+      const audioTrack = videoElement.srcObject.getAudioTracks()[0];
+      if (audioTrack) audioTrack.enabled = !audioEnabled;
+      setAudioEnabled(!audioEnabled);
+    }
   };
 
   const toggleChat = () => {
@@ -104,6 +293,7 @@ export default function Room() {
     setMeetingDetails(!meetingDetails);
     setParticipants(false);
   };
+
   const leaveMeeting = () => {
     if (socket) {
       socket.off("connect");
@@ -139,20 +329,71 @@ export default function Room() {
         />
       )}
 
-      <Stream
-        screen={screen}
-        closed={toggleChat}
-        myId={myId}
-        isChat={isChatVisible}
-        isVideo={videoEnabled}
-        isAudio={audioEnabled}
-        connected={isConnected}
-        socket={socket}
-        room={room}
-        members={members}
-        toggle={toggle}
-      />
-
+      <div className="stream-container">
+        <div
+          className={`stream-left ${
+            isPhone ? (!isChatVisible ? "stream-show" : "stream-hide") : ""
+          }`}
+        >
+          <div className="stream-grid-cover">
+            {screen || board ? (
+              <video
+                ref={presentationRef}
+                className={`presentation ${screen || board ? "show" : "hide"}`}
+                muted
+                autoPlay
+                playsInline
+              ></video>
+            ) : null}
+            <div ref={videoGridRef} className="stream-grid"></div>
+          </div>
+        </div>
+        {isChatVisible && (
+          <div className={`stream-right ${isPhone ? "stream-show" : ""}`}>
+            <div className="stream-right-top">
+              <div className="info">
+                <label>Meeting Chat</label>
+                <AiOutlineClose className="close-chat" onClick={toggleChat} />
+              </div>
+              <hr />
+            </div>
+            <ul className="stream-right-mid">
+              {messages.map((obj, index) => (
+                <li key={index}>
+                  <div className="msg-container">
+                    <div className="msg-top">
+                      <label className="msg-name">{obj.username}</label>
+                      <label className="msg-date">{obj.date}</label>
+                    </div>
+                    <div className="msg-bottom">
+                      <img src={UserImg} alt="User" />
+                      <p className="msg">{obj.msg}</p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="stream-right-bottom">
+              <div className="btm-col">
+                <div className="btm-col-top">
+                  <label>Who can see your messages?</label>
+                  <label className="lb-see">Everyone</label>
+                </div>
+                <div className="btm-row">
+                  <input
+                    type="text"
+                    placeholder="Write..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                  <GrSend className="btm-send" onClick={handleSendMessage} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       <div className="bottom-nav">
         <div className="nav-btn" onClick={toggleVideo}>
           {videoEnabled ? (
@@ -179,7 +420,7 @@ export default function Room() {
           <label>Caption</label>
         </div>
         <div className="nav-btn">
-          <PiPresentationChartFill className="nav-icon" onClick={toggle} />
+          <PiPresentationChartFill className="nav-icon" onClick={toggleBoard} />
           <label>Presentation</label>
         </div>
         {/* ========== Admin function =============*/}
