@@ -30,7 +30,7 @@ export default function Login() {
     if (userId === null || userId === "")
       return toast.error("Please enter your student id!");
 
-    handleLogin();
+    //handleLogin();
 
     toast.success("Success, Joining meeting...");
     navigate(`/room/${userId}`);

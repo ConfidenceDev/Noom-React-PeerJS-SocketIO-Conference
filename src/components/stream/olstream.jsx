@@ -8,8 +8,6 @@ import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 
 let currentStream;
-let isTutor = false;
-let instructor = null;
 
 export default function Stream(props) {
   const {
@@ -28,31 +26,33 @@ export default function Stream(props) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isPhone, setIsPhone] = useState(false);
+  const [instructor, setInstructor] = useState("");
   const [peers, setPeers] = useState([]);
 
   const videoGridRef = useRef();
   const presentationRef = useRef();
 
+  let isPresentation = false;
   let uniqueId = uuidv4();
 
   useEffect(() => {
     if (connected) {
       const initializeMedaia = async () => {
-        const getUserMediaOptions = { video: true, audio: true };
+        const getUserMediaOptions = { video: isVideo, audio: isAudio };
         const getUserScreenOptions = { cursor: true, audio: true };
 
         try {
           if (screen) {
-            instructor = myId;
             const stream = await navigator.mediaDevices.getDisplayMedia(
               getUserScreenOptions
             );
-            socket.emit("room-board-on", room, myId);
+            isPresentation = true;
+            socket.emit("room-board", room, myId);
+            setInstructor(myId);
 
             currentStream = stream;
+            addVideoStream(myId, stream, isPresentation);
             initializePeer(stream);
-            if (presentationRef.current)
-              presentationRef.current.srcObject = stream;
             stream
               .getVideoTracks()[0]
               .addEventListener("ended", () => toggle());
@@ -63,67 +63,41 @@ export default function Stream(props) {
               navigator.mediaDevices.mozGetUserMedia ||
               navigator.mediaDevices.msGetUserMedia;
             const stream = await nav(getUserMediaOptions);
+            isPresentation = false;
 
-            instructor == null;
-            if (presentationRef.current)
-              presentationRef.current.srcObject = null;
-
-            socket.emit("room-board-off", room, myId);
             currentStream = stream;
-            addVideoStream(myId, stream);
-            initializePeer(stream);
+            addVideoStream(myId, stream, isPresentation);
+            initializePeer();
           }
 
-          if (isVideo || isAudio) {
-            console.log("Track Video: " + isVideo);
-            console.log("Track Audio: " + isAudio);
-
-            toggleMyVideoTrack();
-            toggleMyAudioTrack();
-          }
+          //console.log(currentStream);
         } catch (error) {
           toast.error("Error accessing media:", error);
           console.error("Error accessing media:", error);
         }
       };
 
-      const initializePeer = (stream) => {
+      const initializePeer = () => {
         const peer = new Peer(myId, {
           host: "localhost",
           port: 5000,
           path: "/peerjs",
         });
-        loadPeerListeners(peer, stream);
+        loadPeerListeners(peer, currentStream);
       };
 
       const loadPeerListeners = (peer, stream) => {
         peer.on("open", (id) => {
-          console.log("MY ID: " + id);
+          console.log(id);
 
-          socket.on("room-board-on", (userID) => {
-            console.log("ON: " + userID);
-            clearTutor();
-            instructor = userID;
-            isTutor = true;
+          socket.on("room-board", (userID) => {
+            console.log(userID);
+            setInstructor(userID);
+            removeStream(userID);
             connectToNewUser(peer, stream, userID);
           });
 
-          socket.on("room-board-off", (userID) => {
-            if (!userID) {
-              console.log("OFF: " + userID);
-              clearTutor();
-            }
-          });
-
-          const clearTutor = () => {
-            isTutor = false;
-            if (presentationRef.current)
-              presentationRef.current.srcObject = null;
-            instructor = null;
-          };
-
           socket.on("user-connected", (userID) => {
-            console.log("Connecting to: " + userID);
             connectToNewUser(peer, stream, userID);
           });
 
@@ -151,13 +125,18 @@ export default function Stream(props) {
         });
 
         peer.on("call", (call) => {
-          console.log("11111");
-          call.answer(currentStream);
+          call.answer(stream);
           call.on("stream", (userVideoStream) => {
-            console.log("OOOOOOOOOOOO: " + call.peer);
-            if (!document.getElementById(call.peer)) {
-              addVideoStream(call.peer, userVideoStream);
+            if (instructor !== "" && call.peer === instructor) {
+              const videoGrid = videoGridRef.current;
+              if (videoGrid) {
+                while (videoGrid.firstChild) {
+                  videoGrid.removeChild(videoGrid.firstChild);
+                }
+              }
+              return addVideoStream(call.peer, userVideoStream, true);
             }
+            addVideoStream(call.peer, userVideoStream, false);
           });
         });
       };
@@ -175,29 +154,13 @@ export default function Stream(props) {
     setIsPhone(window.innerWidth < 1057);
   };
 
-  const toggleMyVideoTrack = () => {
-    const videoElement = document.getElementById(myId);
-    if (videoElement) {
-      const videoTrack = videoElement.srcObject.getVideoTracks()[0];
-      if (videoTrack) videoTrack.enabled = isVideo;
-    }
-  };
-
-  const toggleMyAudioTrack = () => {
-    const videoElement = document.getElementById(myId);
-    if (videoElement) {
-      const audioTrack = videoElement.srcObject.getAudioTracks()[0];
-      if (audioTrack) audioTrack.enabled = isAudio;
-    }
-  };
-
   const connectToNewUser = (peer, stream, userID) => {
     const call = peer.call(userID, stream);
     const peerRef = { id: userID, peer: call };
     setPeers((prevPeers) => [...prevPeers, peerRef]);
 
     call.on("stream", (userVideoStream) => {
-      addVideoStream(call.peer, userVideoStream);
+      addVideoStream(userID, userVideoStream, false);
     });
 
     call.on("close", () => {
@@ -205,34 +168,23 @@ export default function Stream(props) {
     });
   };
 
-  const addVideoStream = (userID, stream) => {
+  const addVideoStream = (userID, stream, isBoard) => {
     const existingVideoElement = document.getElementById(userID);
-    const regex = new RegExp("^" + userID + "$");
+    if (existingVideoElement) existingVideoElement.remove();
 
-    console.log("A: " + instructor);
-    console.log("B: " + userID);
-    console.log("C: " + regex.test(instructor));
+    const videoElement = document.createElement("video");
+    videoElement.srcObject = stream;
+    videoElement.id = userID;
+    videoElement.setAttribute("autoplay", "");
+    videoElement.setAttribute("playsinline", "");
+    videoElement.addEventListener("loadedmetadata", () => {
+      videoElement.play();
+    });
 
-    console.log("22222");
-    console.log(screen, isTutor);
-
-    if (existingVideoElement && regex.test(instructor)) {
-      console.log("Here");
-      if (presentationRef.current) presentationRef.current.srcObject = stream;
-    } else {
-      console.log("Here B");
-      removeVideoElement(userID);
-      const videoElement = document.createElement("video");
-      videoElement.srcObject = stream;
-      videoElement.id = userID;
-      videoElement.setAttribute("autoplay", "");
-      videoElement.setAttribute("playsinline", "");
-      videoElement.addEventListener("loadedmetadata", () => {
-        videoElement.play();
-      });
-
-      if (videoGridRef.current) videoGridRef.current.append(videoElement);
-    }
+    if (isBoard && presentationRef.current)
+      presentationRef.current.append(videoElement);
+    if (!isBoard && videoGridRef.current)
+      videoGridRef.current.append(videoElement);
   };
 
   const removeVideoElement = (userID) => {
@@ -264,15 +216,7 @@ export default function Stream(props) {
         }`}
       >
         <div className="stream-grid-cover">
-          {screen || isTutor ? (
-            <video
-              ref={presentationRef}
-              className={`presentation ${screen || isTutor ? "show" : "hide"}`}
-              muted
-              autoPlay
-              playsInline
-            ></video>
-          ) : null}
+          <div ref={presentationRef} className="presentation"></div>
           <div ref={videoGridRef} className="stream-grid"></div>
         </div>
       </div>

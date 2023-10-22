@@ -39,7 +39,7 @@ io.on("connection", (socket) => {
 
     socket.join(roomId);
     socket.emit("room-details", meeting_details);
-    socket.emit("room-board", roomPresentations[roomId] || {});
+    socket.emit("room-board-on", roomPresentations[roomId] || {});
 
     const room = io.sockets.adapter.rooms.get(roomId);
     const numberOfMembers = room ? room.size : 0;
@@ -47,10 +47,18 @@ io.on("connection", (socket) => {
     socket.broadcast.to(roomId).emit("user-connected", userId);
     io.to(roomId).emit("nom", numberOfMembers);
 
-    socket.on("room-board", (roomId, userId) => {
+    socket.on("room-board-on", (roomId, userId) => {
       roomPresentations[roomId] = userId;
-      //io.to(roomId).emit("room-board", roomPresentations[roomId]);
-      socket.broadcast.to(roomId).emit("room-board", roomPresentations[roomId]);
+      socket.broadcast
+        .to(roomId)
+        .emit("room-board-on", roomPresentations[roomId]);
+      console.log(roomPresentations);
+    });
+
+    socket.on("room-board-off", (roomId, userId) => {
+      if (roomPresentations[roomId] === userId)
+        roomPresentations[roomId] = null;
+      socket.broadcast.to(roomId).emit("room-board-off", userId);
       console.log(roomPresentations);
     });
 
