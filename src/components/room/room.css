@@ -355,6 +355,10 @@
     flex-direction: column;
   }
 
+  .presentation {
+    width: 100%;
+  }
+
   .stream-grid video {
     width: 200px;
     height: 200px;

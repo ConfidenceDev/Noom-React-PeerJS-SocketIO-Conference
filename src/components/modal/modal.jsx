@@ -43,12 +43,12 @@ export default function Modal({ meeting, members, memCount, roomDetails }) {
             </div>
             <p className="meeting-info">{roomDetails}</p>
             <label className="meeting-url">{currentURL}</label>
-            <div className="copy-cover">
+            <div className="copy-cover" onClick={copyRoom}>
               <BiCopy className="copy-icon" />
-              <label onClick={copyRoom}>Copy</label>
+              <label>Copy</label>
             </div>
             <p>
-              Disclaimer: People will use this meeting link must signin with
+              Disclaimer: People who use this meeting link must signin with
               their student id.
             </p>
           </div>

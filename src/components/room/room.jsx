@@ -34,6 +34,8 @@ import { toggleLogin } from "../../store";
 const ENDPOINT = "http://localhost:5000";
 let socket = null;
 let myId;
+let boardStream = null;
+let instructor = null;
 
 export default function Room() {
   const [videoEnabled, setVideoEnabled] = useState(true);
@@ -56,8 +58,6 @@ export default function Room() {
   const [peers, setPeers] = useState([]);
   const videoGridRef = useRef();
   const presentationRef = useRef();
-  const [instructor, setInstructor] = useState(null);
-  const [currentStream, setCurrentStream] = useState(null);
 
   let uniqueId = uuidv4();
   const nav =
@@ -73,13 +73,14 @@ export default function Room() {
     navigator.mediaDevices
       .getDisplayMedia(getUserScreenOptions)
       .then((stream) => {
-        setInstructor(myId);
+        instructor = myId;
         setIsDisplay(true);
         socket.emit("room-board-on", room, myId);
-        setCurrentStream(stream);
-        addBoardStream(myId, stream);
+        boardStream = stream;
+        addBoardStream(stream);
         stream.getVideoTracks()[0].addEventListener("ended", () => {
-          setInstructor(null);
+          boardStream = null;
+          instructor = null;
           setIsDisplay(false);
           setIsBoard(false);
           socket.emit("room-board-off", room, myId);
@@ -109,8 +110,7 @@ export default function Room() {
 
       nav(getUserMediaOptions)
         .then((stream) => {
-          setCurrentStream(stream);
-          initializePeer();
+          initializePeer(stream);
           addVideoStream(myId, stream);
         })
         .catch((error) => {
@@ -118,65 +118,61 @@ export default function Room() {
           console.error("Error accessing media:", error);
         });
 
-      const initializePeer = () => {
+      const initializePeer = (localStream) => {
         const peer = new Peer(myId, {
           host: "localhost",
           port: 5000,
           path: "/peerjs",
         });
-        loadPeerListeners(peer, currentStream);
+        loadPeerListeners(peer, localStream);
       };
 
       const loadPeerListeners = (peer, stream) => {
         peer.on("open", (id) => {
           console.log("MY ID: " + id);
 
-          socket.on("room-board-on", (userID) => {
-            console.log("ON: " + userID);
-            setInstructor(userID);
-            //connectToNewUser(peer, stream, userID);
-            addBoardStream(userID, stream);
+          socket.on("room-board-on", async (userID) => {
+            const call = await peer.call(userID, stream);
+
+            setIsBoard(true);
+            setIsDisplay(true);
+            call.on("stream", (boardStream) => {
+              addBoardStream(boardStream);
+            });
           });
 
           socket.on("room-board-off", (userID) => {
-            if (!userID) {
-              console.log("OFF: " + userID);
-              removeBoardStream();
-            }
+            removeBoardStream();
           });
 
-          socket.on("user-connected", (userID) => {
+          socket.on("user-connected", async (userID) => {
             console.log("Connecting to: " + userID);
-            connectToNewUser(peer, stream, userID);
+            const call = await peer.call(userID, stream);
+
+            call.on("stream", (userVideoStream) => {
+              addVideoStream(userID, userVideoStream);
+            });
           });
 
           socket.on("user-disconnected", (userID) => {
-            removeStream(userID);
-          });
-
-          const removeStream = (userID) => {
-            const peer = peers.find((peer) => peer.id === userID);
-            if (peer) {
-              peer.peer.destroy();
-            }
-            setPeers((prevPeers) =>
-              prevPeers.filter((peer) => peer.id !== userID)
-            );
             removeVideoStream(userID);
-          };
+          });
 
           socket.on("message", (msg) => {
             if (msg.userId === myId) msg.username = "You";
             else msg.username = msg.userId.substring(0, 6);
-
             setMessages((prevMessages) => [...prevMessages, msg]);
           });
         });
 
         peer.on("call", (call) => {
-          call.answer(stream);
+          if (instructor === myId && boardStream) call.answer(boardStream);
+          else call.answer(stream);
+
           call.on("stream", (userVideoStream) => {
-            addVideoStream(call.peer, userVideoStream);
+            const existingVideoElement = document.getElementById(call.peer);
+            if (!existingVideoElement)
+              addVideoStream(call.peer, userVideoStream);
           });
         });
       };
@@ -195,33 +191,11 @@ export default function Room() {
     setIsPhone(window.innerWidth < 1057);
   };
 
-  const connectToNewUser = (peer, stream, userID) => {
-    const call = peer.call(userID, stream);
-    const peerRef = { id: userID, peer: call };
-    setPeers((prevPeers) => [...prevPeers, peerRef]);
-
-    if (call) {
-      call.on("stream", (userVideoStream) => {
-        addVideoStream(userID, userVideoStream);
-      });
-
-      call.on("close", () => {
-        setPeers((prevPeers) => prevPeers.filter((peer) => peer.id !== userID));
-      });
-    }
-  };
-
-  // addBoardStream(userID, userVideoStream);
-
-  const addBoardStream = (userID, stream) => {
-    setInstructor(userID);
-    setIsBoard(true);
-    setIsDisplay(true);
-    //if (presentationRef.current) presentationRef.current.srcObject = stream;
+  const addBoardStream = (stream) => {
+    if (presentationRef.current) presentationRef.current.srcObject = stream;
   };
 
   const removeBoardStream = () => {
-    setInstructor(null);
     setIsDisplay(false);
     setIsBoard(false);
     if (presentationRef.current) presentationRef.current.srcObject = null;
@@ -243,7 +217,10 @@ export default function Room() {
 
   const removeVideoStream = (userID) => {
     const existingVideoElement = document.getElementById(userID);
-    if (existingVideoElement) existingVideoElement.remove();
+    if (existingVideoElement) {
+      existingVideoElement.srcObject = null;
+      existingVideoElement.remove();
+    }
   };
 
   const handleKeyDown = (event) => {
