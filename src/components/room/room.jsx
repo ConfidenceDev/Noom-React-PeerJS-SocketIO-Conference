@@ -69,6 +69,13 @@ export default function Room() {
   const getUserScreenOptions = { cursor: true, audio: true };
 
   const startBoard = () => {
+    if (!socket) return;
+
+    if (instructor !== null) {
+      toast.error("Someone is currently presenting!");
+      return;
+    }
+
     setIsBoard(true);
     navigator.mediaDevices
       .getDisplayMedia(getUserScreenOptions)
@@ -132,6 +139,7 @@ export default function Room() {
           console.log("MY ID: " + id);
 
           socket.on("room-board-on", async (userID) => {
+            instructor = userID;
             const call = await peer.call(userID, stream);
 
             setIsBoard(true);
@@ -142,6 +150,7 @@ export default function Room() {
           });
 
           socket.on("room-board-off", (userID) => {
+            instructor = null;
             removeBoardStream();
           });
 
