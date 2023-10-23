@@ -28,7 +28,6 @@ app.get("/", (req, res) => {
   res.sendStatus(200);
 });
 
-const meeting_details = "Hey";
 let roomPresentations = {};
 
 io.on("connection", (socket) => {
@@ -36,15 +35,17 @@ io.on("connection", (socket) => {
 
   socket.on("join-room", (roomId, userId) => {
     console.log(roomId, userId);
-
     socket.join(roomId);
-    socket.emit("room-details", meeting_details);
 
     const room = io.sockets.adapter.rooms.get(roomId);
     const numberOfMembers = room ? room.size : 0;
 
     socket.broadcast.to(roomId).emit("user-connected", userId);
     io.to(roomId).emit("nom", numberOfMembers);
+
+    socket.on("mute-all", () => {
+      socket.broadcast.to(roomId).emit("mute-all");
+    });
 
     socket.on("room-board-on", (roomId, userId) => {
       roomPresentations[roomId] = userId;
@@ -61,9 +62,11 @@ io.on("connection", (socket) => {
       console.log(roomPresentations);
     });
 
-    socket.on("message", (message) => {
+    socket.on("message", (data) => {
       const obj = {
-        msg: message,
+        msg: data.msg,
+        username: data.username,
+        img: data.img,
         userId: userId,
         date: new Date().toLocaleDateString("en-us", {
           year: "numeric",

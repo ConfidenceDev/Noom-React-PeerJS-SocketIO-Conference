@@ -53,23 +53,23 @@
 }
 
 .stream-grid {
+  /* width: 100%;
+    height: 100%;
+    margin-right: 4px;
+    padding: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-rows: repeat(auto-fit, minmax(100%, 1fr));
+    grid-auto-flow: row dense;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    gap: 20px; */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  grid-auto-rows: 300px;
-  gap: 16px;
-  max-width: 100%;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  grid-auto-rows: 300px; /* Set the desired row height */
+  gap: 20px;
+  max-width: 100%; /* To prevent horizontal overflow */
+  overflow-y: auto; /* Add vertical scrollbar if needed */
   padding: 16px;
-}
-
-.stream-grid::-webkit-scrollbar {
-  width: 10px;
-  background: var(--dark-grey);
-}
-
-.stream-grid::-webkit-scrollbar-thumb {
-  background: var(--chat);
 }
 
 .video-stream-container {
@@ -79,7 +79,6 @@
   border-radius: 8px;
   display: block;
   position: relative;
-  justify-self: center;
 }
 
 .video-stream-container video {
@@ -90,7 +89,19 @@
   object-fit: cover;
 }
 
-.video-stream-container label {
+/*.stream-grid video {
+    grid-row: 1;
+    grid-column: 1;
+    border-radius: 8px;
+    background-color: black;
+    width: 300px;
+    height: 300px;
+    box-shadow: 0 2px 30px var(--box);
+    object-fit: cover;
+    margin: 8px;
+  }*/
+
+.stream-grid label {
   position: absolute;
   bottom: 4px;
   left: 8px;
@@ -249,10 +260,6 @@
   width: 0%;
 }
 
-.stream-full {
-  width: 70%;
-}
-
 .stream-show {
   width: 100%;
 }
@@ -389,16 +396,12 @@
     width: 100%;
   }
 
-  .stream-grid {
-    gap: 4px;
+  .stream-grid video {
+    width: 200px;
+    height: 200px;
   }
 
-  .video-stream-container {
-    width: 250px;
-    height: 250px;
-  }
-
-  .video-stream-container label {
+  .stream-grid label {
     font-size: 12px;
   }
 }

@@ -1,19 +1,43 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import StudentImg from "../../assets/student.png";
 import Logo from "../../assets/video.png";
 import "./login.css";
-import { useDispatch } from "react-redux";
-import { toggleLogin } from "../../store";
+import "../animations.css";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleLogin, setMeetingAndUser } from "../../store";
+
+const meeting = {
+  instructor: "joe",
+  instructorId: "1",
+  room: "y",
+  course: "Geography",
+  desc: "Yo",
+  date: "25-10-2023",
+  time: "08:45 am",
+};
+
+const user = {
+  username: "dev",
+  userId: "2",
+  email: "dev@gmail.com",
+  img: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?cs=srgb&dl=pexels-pixabay-220453.jpg&fm=jpg",
+};
 
 export default function Login() {
-  const [userId, setUserId] = useState("");
+  const [emailId, setEmailId] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const loggedIn = useSelector((state) => state.value);
+  const { room } = useParams();
+  const [meetingExist, setMeetingExist] = useState(true);
+  const [meetingDetails, setMeetingDetails] = useState({});
+  const [registered, setRegistered] = useState(true);
 
-  const handleLogin = () => {
-    dispatch(toggleLogin());
+  const checkMeeting = () => {
+    //Fetch meeting details with axios
+    //If exist, setMeetingDetails
   };
 
   const loadRoom = () => {
@@ -27,21 +51,51 @@ export default function Login() {
   };
 
   function loadUser() {
-    if (userId === null || userId === "")
+    if (!meetingExist) {
+      toast.error("Oops, no meeting with that name!");
+      return;
+    }
+
+    if (emailId === null || emailId === "")
       return toast.error("Please enter your student id!");
 
-    //handleLogin();
-
-    toast.success("Success, Joining meeting...");
-    navigate(`/room/${userId}`);
+    //Check if the user has course registered
+    if (registered) {
+      dispatch(setMeetingAndUser(meeting, user));
+      dispatch(toggleLogin());
+      toast.success("Success, Joining meeting...");
+      navigate(`/lecture/${room}/live`);
+    } else {
+      toast.error("You've not registered for this course");
+    }
   }
 
   return (
     <>
-      <div className="container">
-        <div className="logo">
-          <img src={Logo} alt="logo" />
-          <label htmlFor="logo">LMS Noom</label>
+      <div className={`container`}>
+        <div className="nav">
+          <div className="logo">
+            <img src={Logo} alt="logo" />
+            <label htmlFor="logo">LMS Noom</label>
+          </div>
+          <div className="meeting-card">
+            <label>
+              <span>Instructor: </span>
+              {meeting.instructor}
+            </label>
+            <label>
+              <span>Course: </span>
+              {meeting.course}
+            </label>
+            <label>
+              <span>Meeting Date: </span>
+              {meeting.date}
+            </label>
+            <label>
+              <span>Meeting Time: </span>
+              {meeting.time}
+            </label>
+          </div>
         </div>
         <div className="entry">
           <img src={StudentImg} alt="student" />
@@ -49,9 +103,9 @@ export default function Login() {
             <div className="inputs">
               <input
                 type="text"
-                value={userId}
-                placeholder="Student ID"
-                onChange={(e) => setUserId(e.target.value)}
+                value={emailId}
+                placeholder="Email ID"
+                onChange={(e) => setEmailId(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
               <button
@@ -66,7 +120,7 @@ export default function Login() {
           </div>
         </div>
         <label htmlFor="copyright" className="copyright">
-          Noom, Copyright &#169; 2023 DecodeAnalytics Team
+          LMS, Copyright &#169; 2023 DecodeAnalytics Team
         </label>
       </div>
     </>

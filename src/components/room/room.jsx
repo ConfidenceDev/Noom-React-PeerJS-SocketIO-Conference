@@ -15,7 +15,7 @@ import { PiPresentationChartFill } from "react-icons/pi";
 import { HiHandRaised } from "react-icons/hi2";
 import { VscReactions } from "react-icons/vsc";
 import { FaPeopleGroup } from "react-icons/fa6";
-import { FaVolumeMute } from "react-icons/fa";
+import { FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import { GiBootKick } from "react-icons/gi";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { IoExit } from "react-icons/io5";
@@ -30,6 +30,7 @@ import io from "socket.io-client";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleLogin } from "../../store";
+import "../animations.css";
 
 const ENDPOINT = "http://localhost:5000";
 let socket = null;
@@ -40,6 +41,7 @@ let instructor = null;
 export default function Room() {
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [muteAllEnabled, setMuteAllEnabled] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(true);
   const [participants, setParticipants] = useState(false);
   const [meetingDetails, setMeetingDetails] = useState(false);
@@ -49,8 +51,9 @@ export default function Room() {
   const { room } = useParams();
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
-  const [roomDetails, setRoomDetails] = useState("");
-  const loggedIn = useSelector((state) => state.value);
+  const loggedIn = useSelector((state) => state.loggedIn);
+  const meetingRecord = useSelector((state) => state.meeting);
+  const userRecord = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -100,7 +103,7 @@ export default function Room() {
   };
 
   useEffect(() => {
-    //if (!loggedIn) return navigate(`/`);
+    if (!loggedIn) return navigate(`/lecture/${room}`);
 
     socket = io(ENDPOINT);
     socket.on("connect", () => {
@@ -109,10 +112,6 @@ export default function Room() {
 
       socket.on("nom", (data) => {
         setMembers(data.toString());
-      });
-
-      socket.on("room-details", (data) => {
-        setRoomDetails(data);
       });
 
       nav(getUserMediaOptions)
@@ -138,6 +137,10 @@ export default function Room() {
         peer.on("open", (id) => {
           console.log("MY ID: " + id);
 
+          socket.on("mute-all", () => {
+            toggleAudio();
+          });
+
           socket.on("room-board-on", async (userID) => {
             instructor = userID;
             const call = await peer.call(userID, stream);
@@ -149,7 +152,7 @@ export default function Room() {
             });
           });
 
-          socket.on("room-board-off", (userID) => {
+          socket.on("room-board-off", () => {
             instructor = null;
             removeBoardStream();
           });
@@ -169,7 +172,7 @@ export default function Room() {
 
           socket.on("message", (msg) => {
             if (msg.userId === myId) msg.username = "You";
-            else msg.username = msg.userId.substring(0, 6);
+            else msg.username = msg.username.substring(0, 6);
             setMessages((prevMessages) => [...prevMessages, msg]);
           });
         });
@@ -189,12 +192,21 @@ export default function Room() {
 
     handleResize();
     window.addEventListener("resize", handleResize);
+    window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       socket.off("connect");
       socket.disconnect();
     };
   }, [peers]);
+
+  const handleBeforeUnload = () => {
+    if (socket) {
+      socket.off("connect");
+      socket.disconnect();
+    }
+  };
 
   const handleResize = () => {
     setIsPhone(window.innerWidth < 1057);
@@ -215,13 +227,24 @@ export default function Room() {
     const videoElement = document.createElement("video");
     videoElement.srcObject = stream;
     videoElement.id = userID;
+    videoElement.classList.add("video-stream");
     videoElement.setAttribute("autoplay", "");
     videoElement.setAttribute("playsinline", "");
     videoElement.addEventListener("loadedmetadata", () => {
       videoElement.play();
     });
 
-    if (videoGridRef.current) videoGridRef.current.append(videoElement);
+    const label = document.createElement("label");
+    if (userID === myId) label.textContent = `You`;
+    else label.textContent = `${userID}`;
+
+    const videoContainer = document.createElement("div");
+    videoContainer.id = userID;
+    videoContainer.className = "video-stream-container";
+    videoContainer.appendChild(videoElement);
+    videoContainer.appendChild(label);
+
+    if (videoGridRef.current) videoGridRef.current.append(videoContainer);
   };
 
   const removeVideoStream = (userID) => {
@@ -239,7 +262,12 @@ export default function Room() {
   };
 
   const handleSendMessage = () => {
-    socket.emit("message", message);
+    const obj = {
+      msg: message,
+      username: userRecord.username,
+      img: userRecord.img,
+    };
+    socket.emit("message", obj);
     setMessage("");
   };
 
@@ -258,7 +286,14 @@ export default function Room() {
       const audioTrack = videoElement.srcObject.getAudioTracks()[0];
       if (audioTrack) audioTrack.enabled = !audioEnabled;
       setAudioEnabled(!audioEnabled);
+
+      console.log(audioEnabled);
     }
+  };
+
+  const toggleMuteAll = () => {
+    socket.emit("mute-all");
+    setMuteAllEnabled(!muteAllEnabled);
   };
 
   const toggleChat = () => {
@@ -283,7 +318,7 @@ export default function Room() {
 
     toast.success("You left the meeting!");
     dispatch(toggleLogin());
-    navigate(`/`);
+    navigate(`/lecture/${room}`);
   };
 
   const toggleAdmin = () => {
@@ -291,13 +326,13 @@ export default function Room() {
   };
 
   return (
-    <div className="container">
+    <div className={`container`}>
       {meetingDetails && (
         <Modal
           meeting={meetingDetails}
           members={participants}
           memCount={members}
-          roomDetails={roomDetails}
+          roomDetails={meeting.desc}
         />
       )}
 
@@ -306,7 +341,7 @@ export default function Room() {
           meeting={meetingDetails}
           members={participants}
           memCount={members}
-          roomDetails={roomDetails}
+          roomDetails={meeting.desc}
         />
       )}
 
@@ -347,7 +382,7 @@ export default function Room() {
                       <label className="msg-date">{obj.date}</label>
                     </div>
                     <div className="msg-bottom">
-                      <img src={UserImg} alt="User" />
+                      <img src={obj.img} alt="User" />
                       <p className="msg">{obj.msg}</p>
                     </div>
                   </div>
@@ -412,9 +447,13 @@ export default function Room() {
           </div>
         )}
         {isAdmin && (
-          <div className="nav-btn">
-            <FaVolumeMute className="nav-icon" />
-            <label>Mute All</label>
+          <div className="nav-btn" onClick={toggleMuteAll}>
+            {muteAllEnabled ? (
+              <FaVolumeUp className="nav-icon" />
+            ) : (
+              <FaVolumeMute className="nav-icon" />
+            )}
+            <label> {muteAllEnabled ? "UnMute All" : "Mute All"}</label>
           </div>
         )}
         {isAdmin && (
