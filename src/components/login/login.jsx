@@ -9,17 +9,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleLogin, setMeetingAndUser } from "../../store";
 
 const meeting = {
-  instructor: "joe",
+  instructor: "Joe",
   instructorId: "1",
-  room: "y",
+  room: "mluksn",
   course: "Geography",
-  desc: "Yo",
+  desc: "Continents around the world",
   date: "25-10-2023",
   time: "08:45 am",
 };
 
 const user = {
-  username: "dev",
+  username: "Dev",
   userId: "2",
   email: "dev@gmail.com",
   img: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?cs=srgb&dl=pexels-pixabay-220453.jpg&fm=jpg",
@@ -52,7 +52,7 @@ export default function Login() {
 
   function loadUser() {
     if (!meetingExist) {
-      toast.error("Oops, no meeting with that name!");
+      toast.error("Oops, no scheduled meeting with that name!");
       return;
     }
 
@@ -63,7 +63,7 @@ export default function Login() {
     if (registered) {
       dispatch(setMeetingAndUser(meeting, user));
       dispatch(toggleLogin());
-      toast.success("Success, Joining meeting...");
+      toast.success("You've joined the meeting");
       navigate(`/lecture/${room}/live`);
     } else {
       toast.error("You've not registered for this course");
@@ -78,24 +78,26 @@ export default function Login() {
             <img src={Logo} alt="logo" />
             <label htmlFor="logo">LMS Noom</label>
           </div>
-          <div className="meeting-card">
-            <label>
-              <span>Instructor: </span>
-              {meeting.instructor}
-            </label>
-            <label>
-              <span>Course: </span>
-              {meeting.course}
-            </label>
-            <label>
-              <span>Meeting Date: </span>
-              {meeting.date}
-            </label>
-            <label>
-              <span>Meeting Time: </span>
-              {meeting.time}
-            </label>
-          </div>
+          {meetingExist && (
+            <div className="meeting-card">
+              <label>
+                <span>Instructor: </span>
+                {meeting.instructor}
+              </label>
+              <label>
+                <span>Course: </span>
+                {meeting.course}
+              </label>
+              <label>
+                <span>Meeting Date: </span>
+                {meeting.date}
+              </label>
+              <label>
+                <span>Meeting Time: </span>
+                {meeting.time}
+              </label>
+            </div>
+          )}
         </div>
         <div className="entry">
           <img src={StudentImg} alt="student" />

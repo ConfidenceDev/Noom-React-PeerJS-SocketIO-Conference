@@ -117,7 +117,7 @@ export default function Room() {
       nav(getUserMediaOptions)
         .then((stream) => {
           initializePeer(stream);
-          addVideoStream(myId, stream);
+          addVideoStream(myId, stream, "You");
         })
         .catch((error) => {
           toast.error("Error accessing media:", error);
@@ -159,10 +159,23 @@ export default function Room() {
 
           socket.on("user-connected", async (userID) => {
             console.log("Connecting to: " + userID);
-            const call = await peer.call(userID, stream);
+            const call = await peer.call(userID, stream, {
+              metadata: {
+                username: userRecord.username,
+              },
+            });
+
+            let username = "LMS";
+            socket.on("username", (data) => {
+              username = data;
+            });
 
             call.on("stream", (userVideoStream) => {
-              addVideoStream(userID, userVideoStream);
+              addVideoStream(userID, userVideoStream, username);
+            });
+
+            call.on("data", (data) => {
+              console.log("Received custom data from User 2: " + data);
             });
           });
 
@@ -178,13 +191,19 @@ export default function Room() {
         });
 
         peer.on("call", (call) => {
+          socket.emit("username", call.peer, userRecord.username);
+
           if (instructor === myId && boardStream) call.answer(boardStream);
           else call.answer(stream);
 
           call.on("stream", (userVideoStream) => {
             const existingVideoElement = document.getElementById(call.peer);
             if (!existingVideoElement)
-              addVideoStream(call.peer, userVideoStream);
+              addVideoStream(
+                call.peer,
+                userVideoStream,
+                call.metadata.username
+              );
           });
         });
       };
@@ -222,11 +241,12 @@ export default function Room() {
     if (presentationRef.current) presentationRef.current.srcObject = null;
   };
 
-  const addVideoStream = (userID, stream) => {
+  const addVideoStream = (userID, stream, username) => {
     removeVideoStream(userID);
     const videoElement = document.createElement("video");
     videoElement.srcObject = stream;
     videoElement.id = userID;
+    videoElement.className = userID;
     videoElement.classList.add("video-stream");
     videoElement.setAttribute("autoplay", "");
     videoElement.setAttribute("playsinline", "");
@@ -235,8 +255,7 @@ export default function Room() {
     });
 
     const label = document.createElement("label");
-    if (userID === myId) label.textContent = `You`;
-    else label.textContent = `${userID}`;
+    label.textContent = `${username}`;
 
     const videoContainer = document.createElement("div");
     videoContainer.id = userID;
@@ -272,7 +291,7 @@ export default function Room() {
   };
 
   const toggleVideo = () => {
-    const videoElement = document.getElementById(myId);
+    const videoElement = document.querySelector(`.${myId}`);
     if (videoElement) {
       const videoTrack = videoElement.srcObject.getVideoTracks()[0];
       if (videoTrack) videoTrack.enabled = !videoEnabled;
@@ -281,13 +300,11 @@ export default function Room() {
   };
 
   const toggleAudio = () => {
-    const videoElement = document.getElementById(myId);
+    const videoElement = document.querySelector(`.${myId}`);
     if (videoElement) {
       const audioTrack = videoElement.srcObject.getAudioTracks()[0];
       if (audioTrack) audioTrack.enabled = !audioEnabled;
       setAudioEnabled(!audioEnabled);
-
-      console.log(audioEnabled);
     }
   };
 
@@ -332,7 +349,7 @@ export default function Room() {
           meeting={meetingDetails}
           members={participants}
           memCount={members}
-          roomDetails={meeting.desc}
+          roomDetails={meetingRecord.desc}
         />
       )}
 
@@ -341,7 +358,7 @@ export default function Room() {
           meeting={meetingDetails}
           members={participants}
           memCount={members}
-          roomDetails={meeting.desc}
+          roomDetails={meetingRecord.desc}
         />
       )}
 

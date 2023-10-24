@@ -34,7 +34,6 @@ io.on("connection", (socket) => {
   console.log("New User: " + socket.id);
 
   socket.on("join-room", (roomId, userId) => {
-    console.log(roomId, userId);
     socket.join(roomId);
 
     const room = io.sockets.adapter.rooms.get(roomId);
@@ -47,19 +46,21 @@ io.on("connection", (socket) => {
       socket.broadcast.to(roomId).emit("mute-all");
     });
 
+    socket.on("username", (id, username) => {
+      socket.to(id).emit("username", username);
+    });
+
     socket.on("room-board-on", (roomId, userId) => {
       roomPresentations[roomId] = userId;
       socket.broadcast
         .to(roomId)
         .emit("room-board-on", roomPresentations[roomId]);
-      console.log(roomPresentations);
     });
 
     socket.on("room-board-off", (roomId, userId) => {
       if (roomPresentations[roomId] === userId)
         roomPresentations[roomId] = null;
       socket.broadcast.to(roomId).emit("room-board-off", userId);
-      console.log(roomPresentations);
     });
 
     socket.on("message", (data) => {
