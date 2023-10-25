@@ -49,7 +49,7 @@ export default function Modal({ meeting, members, memCount, roomDetails }) {
             </div>
             <p>
               Disclaimer: People who use this meeting link must signin with
-              their student id.
+              their student email.
             </p>
           </div>
         </div>
