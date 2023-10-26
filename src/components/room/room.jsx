@@ -137,8 +137,13 @@ export default function Room() {
         peer.on("open", (id) => {
           console.log("MY ID: " + id);
 
-          socket.on("mute-all", () => {
-            toggleAudio();
+          socket.on("mute-all", (value) => {
+            const videoElement = document.querySelector(`.${myId}`);
+            if (videoElement) {
+              const audioTrack = videoElement.srcObject.getAudioTracks()[0];
+              if (audioTrack) audioTrack.enabled = value;
+              setAudioEnabled(value);
+            }
           });
 
           socket.on("room-board-on", async (userID) => {
@@ -309,7 +314,7 @@ export default function Room() {
   };
 
   const toggleMuteAll = () => {
-    socket.emit("mute-all");
+    socket.emit("mute-all", muteAllEnabled);
     setMuteAllEnabled(!muteAllEnabled);
   };
 

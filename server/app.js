@@ -42,8 +42,8 @@ io.on("connection", (socket) => {
     socket.broadcast.to(roomId).emit("user-connected", userId);
     io.to(roomId).emit("nom", numberOfMembers);
 
-    socket.on("mute-all", () => {
-      socket.broadcast.to(roomId).emit("mute-all");
+    socket.on("mute-all", (value) => {
+      socket.broadcast.to(roomId).emit("mute-all", value);
     });
 
     socket.on("username", (id, username) => {
