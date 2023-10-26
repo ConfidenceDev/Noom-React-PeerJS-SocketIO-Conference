@@ -10,7 +10,7 @@ import { toggleLogin, setMeetingAndUser } from "../../store";
 
 const meeting = {
   instructor: "Joe",
-  instructorId: "1",
+  instructorId: "2",
   room: "mluksn",
   course: "Geography",
   desc: "Continents around the world",

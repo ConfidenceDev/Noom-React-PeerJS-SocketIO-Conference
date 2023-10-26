@@ -109,6 +109,8 @@ export default function Room() {
     socket.on("connect", () => {
       myId = socket.id;
       socket.emit("join-room", room, myId);
+      console.log(meetingRecord.instructorId, userRecord.userId);
+      if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true);
 
       socket.on("nom", (data) => {
         setMembers(data.toString());
@@ -343,10 +345,6 @@ export default function Room() {
     navigate(`/lecture/${room}`);
   };
 
-  const toggleAdmin = () => {
-    setIsAdmin(!isAdmin);
-  };
-
   return (
     <div className={`container`}>
       {meetingDetails && (
@@ -500,7 +498,7 @@ export default function Room() {
           </div>
           <label>Participants</label>
         </div>
-        <div className="nav-btn" onClick={toggleAdmin}>
+        <div className="nav-btn">
           <FiMoreHorizontal className="nav-icon" />
           <label>More Options</label>
         </div>
