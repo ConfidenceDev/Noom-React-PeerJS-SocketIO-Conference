@@ -1,9 +1,9 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Login, Room } from "./components";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Provider } from "react-redux";
-import store from "./store";
+import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { Login, Room } from "./components"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { Provider } from "react-redux"
+import store from "./store"
 
 export default function App() {
   return (
@@ -18,5 +18,5 @@ export default function App() {
         </BrowserRouter>
       </Provider>
     </>
-  );
+  )
 }

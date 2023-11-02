@@ -1,0 +1,2 @@
+/* /lecture/:room -> /lecture/:room 301
+/lecture/:room/:access -> /lecture/:room 301
