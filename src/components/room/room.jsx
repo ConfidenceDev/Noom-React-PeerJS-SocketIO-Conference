@@ -418,7 +418,7 @@ export default function Room() {
                     </div>
                     <div className="msg-bottom">
                       <img
-                        src={obj.img.length > 0 ? obj.img[0] : UserImg}
+                        src={obj.img.length > 0 ? obj.img[0].path : UserImg}
                         alt="User"
                       />
                       <p className="msg">{obj.msg}</p>
