@@ -42,7 +42,7 @@ export default function Login() {
       }),
     }
     fetch(
-      `https://decode-mnjh.onrender.com/api/admin/studentJoinmeeting/${room}`,
+      `https://decode-mnjh.onrender.com/api/admin/joinmeeting/${room}`,
       options
     )
       .then((response) => response.json())
