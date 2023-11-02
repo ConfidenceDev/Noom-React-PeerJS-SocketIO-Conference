@@ -86,7 +86,7 @@ export default function Login() {
         <div className="nav">
           <div className="logo">
             <img src={Logo} alt="logo" />
-            <label htmlFor="logo">LMS Noom</label>
+            <label htmlFor="logo">Decode LMS</label>
           </div>
         </div>
         <div className="entry">
@@ -113,7 +113,7 @@ export default function Login() {
           </div>
         </div>
         <label htmlFor="copyright" className="copyright">
-          LMS, Copyright &#169; 2023 DecodeAnalytics Team
+          LMS, Copyright &#169; 2023 Decode Team
         </label>
       </div>
     </>
