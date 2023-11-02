@@ -26,4 +26,4 @@ git commit -a 'deploy'
 # if you are deploying to https://<USEANAME>.github.io/REPO> 
 # git push -f git@github.com:ConfidenceDev/Noom-React-PeerJS-SocketIO-Conference.git main:gh-pages
 
-cd-
+cd -
