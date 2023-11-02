@@ -9,8 +9,8 @@ export default function App() {
   return (
     <>
       <Provider store={store}>
+        <ToastContainer className="toast" />
         <Router>
-          <ToastContainer className="toast" />
           <Routes>
             <Route path="/lecture/:room" element={<Login />} />
             <Route path="/lecture/:room/:access" element={<Room />} />
