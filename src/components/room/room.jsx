@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import "./room.css";
+import { useState, useEffect, useRef } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import "./room.css"
 import {
   BsFillMicFill,
   BsFillMicMuteFill,
@@ -9,341 +9,341 @@ import {
   BsFillChatTextFill,
   BsFillRecordCircleFill,
   BsFillInfoCircleFill,
-} from "react-icons/bs";
-import { BiSolidCaptions } from "react-icons/bi";
-import { PiPresentationChartFill } from "react-icons/pi";
-import { HiHandRaised } from "react-icons/hi2";
-import { VscReactions } from "react-icons/vsc";
-import { FaPeopleGroup } from "react-icons/fa6";
-import { FaVolumeMute, FaVolumeUp } from "react-icons/fa";
-import { GiBootKick } from "react-icons/gi";
-import { FiMoreHorizontal } from "react-icons/fi";
-import { IoExit } from "react-icons/io5";
-import { GrSend } from "react-icons/gr";
-import { AiOutlineClose } from "react-icons/ai";
-import UserImg from "../../assets/user1.png";
-import Peer from "peerjs";
-import { v4 as uuidv4 } from "uuid";
-import Modal from "../modal/modal";
-import "../modal/modal.css";
-import io from "socket.io-client";
-import { toast } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
-import { toggleLogin } from "../../store";
-import "../animations.css";
+} from "react-icons/bs"
+import { BiSolidCaptions } from "react-icons/bi"
+import { PiPresentationChartFill } from "react-icons/pi"
+import { HiHandRaised } from "react-icons/hi2"
+import { VscReactions } from "react-icons/vsc"
+import { FaPeopleGroup } from "react-icons/fa6"
+import { FaVolumeMute, FaVolumeUp } from "react-icons/fa"
+import { GiBootKick } from "react-icons/gi"
+import { FiMoreHorizontal } from "react-icons/fi"
+import { IoExit } from "react-icons/io5"
+import { GrSend } from "react-icons/gr"
+import { AiOutlineClose } from "react-icons/ai"
+import UserImg from "../../assets/user1.png"
+import Peer from "peerjs"
+import { v4 as uuidv4 } from "uuid"
+import Modal from "../modal/modal"
+import "../modal/modal.css"
+import io from "socket.io-client"
+import { toast } from "react-toastify"
+import { useDispatch, useSelector } from "react-redux"
+import { toggleLogin } from "../../store"
+import "../animations.css"
 
-const ENDPOINT = "http://localhost:5000";
-let socket = null;
-let myId;
-let boardStream = null;
-let instructor = null;
+const ENDPOINT = "https://noom-lms-server.onrender.com"
+//const ENDPOINT = "http://localhost:5000"
+let socket = null
+let myId
+let boardStream = null
+let instructor = null
 
 export default function Room() {
-  const [videoEnabled, setVideoEnabled] = useState(true);
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  const [muteAllEnabled, setMuteAllEnabled] = useState(false);
-  const [isChatVisible, setIsChatVisible] = useState(true);
-  const [participants, setParticipants] = useState(false);
-  const [meetingDetails, setMeetingDetails] = useState(false);
-  const [isBoard, setIsBoard] = useState(false);
-  const [isDisplay, setIsDisplay] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const { room } = useParams();
-  const navigate = useNavigate();
-  const [members, setMembers] = useState([]);
-  const loggedIn = useSelector((state) => state.loggedIn);
-  const meetingRecord = useSelector((state) => state.meeting);
-  const userRecord = useSelector((state) => state.user);
-  const dispatch = useDispatch();
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [isPhone, setIsPhone] = useState(false);
-  const [peers, setPeers] = useState([]);
-  const videoGridRef = useRef();
-  const presentationRef = useRef();
+  const [videoEnabled, setVideoEnabled] = useState(true)
+  const [audioEnabled, setAudioEnabled] = useState(true)
+  const [muteAllEnabled, setMuteAllEnabled] = useState(false)
+  const [isChatVisible, setIsChatVisible] = useState(true)
+  const [participants, setParticipants] = useState(false)
+  const [meetingDetails, setMeetingDetails] = useState(false)
+  const [isBoard, setIsBoard] = useState(false)
+  const [isDisplay, setIsDisplay] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const { room } = useParams()
+  const navigate = useNavigate()
+  const [members, setMembers] = useState([])
+  const loggedIn = useSelector((state) => state.loggedIn)
+  const meetingRecord = useSelector((state) => state.meeting)
+  const userRecord = useSelector((state) => state.user)
+  const dispatch = useDispatch()
+  const [message, setMessage] = useState("")
+  const [messages, setMessages] = useState([])
+  const [isPhone, setIsPhone] = useState(false)
+  const [peers, setPeers] = useState([])
+  const videoGridRef = useRef()
+  const presentationRef = useRef()
 
-  let uniqueId = uuidv4();
+  let uniqueId = uuidv4()
   const nav =
     navigator.mediaDevices.getUserMedia ||
     navigator.mediaDevices.webkitGetUserMedia ||
     navigator.mediaDevices.mozGetUserMedia ||
-    navigator.mediaDevices.msGetUserMedia;
-  const getUserMediaOptions = { video: true, audio: true };
-  const getUserScreenOptions = { cursor: true, audio: true };
+    navigator.mediaDevices.msGetUserMedia
+  const getUserMediaOptions = { video: true, audio: true }
+  const getUserScreenOptions = { cursor: true, audio: true }
 
   const startBoard = () => {
-    if (!socket) return;
+    if (!socket) return
 
     if (instructor !== null) {
-      toast.error("Someone is currently presenting!");
-      return;
+      toast.error("Someone is currently presenting!")
+      return
     }
 
-    setIsBoard(true);
+    setIsBoard(true)
     navigator.mediaDevices
       .getDisplayMedia(getUserScreenOptions)
       .then((stream) => {
-        instructor = myId;
-        setIsDisplay(true);
-        socket.emit("room-board-on", room, myId);
-        boardStream = stream;
-        addBoardStream(stream);
+        instructor = myId
+        setIsDisplay(true)
+        socket.emit("room-board-on", room, myId)
+        boardStream = stream
+        addBoardStream(stream)
         stream.getVideoTracks()[0].addEventListener("ended", () => {
-          boardStream = null;
-          instructor = null;
-          setIsDisplay(false);
-          setIsBoard(false);
-          socket.emit("room-board-off", room, myId);
-        });
+          boardStream = null
+          instructor = null
+          setIsDisplay(false)
+          setIsBoard(false)
+          socket.emit("room-board-off", room, myId)
+        })
       })
       .catch((error) => {
-        toast.error("Error accessing media:", error);
-        console.error("Error accessing media:", error);
-      });
-  };
+        toast.error("Error accessing media:", error)
+        console.error("Error accessing media:", error)
+      })
+  }
 
   useEffect(() => {
-    if (!loggedIn) return navigate(`/lecture/${room}`);
+    if (!loggedIn) return navigate(`/lecture/${room}`)
 
-    socket = io(ENDPOINT);
+    socket = io(ENDPOINT)
     socket.on("connect", () => {
-      myId = socket.id;
-      socket.emit("join-room", room, myId);
-      console.log(meetingRecord.instructorId, userRecord.userId);
-      if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true);
+      myId = socket.id
+      socket.emit("join-room", room, myId)
+
+      //console.log(myId)
+      //console.log(meetingRecord.instructorId, userRecord.userId)
+      if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true)
 
       socket.on("nom", (data) => {
-        setMembers(data.toString());
-      });
+        setMembers(data.toString())
+      })
 
       nav(getUserMediaOptions)
         .then((stream) => {
-          initializePeer(stream);
-          addVideoStream(myId, stream, "You");
+          initializePeer(stream)
+          addVideoStream(myId, stream, "You")
         })
         .catch((error) => {
-          toast.error("Error accessing media:", error);
-          console.error("Error accessing media:", error);
-        });
+          toast.error("Error accessing media:", error)
+          console.error("Error accessing media:", error)
+        })
 
       const initializePeer = (localStream) => {
         const peer = new Peer(myId, {
-          host: "localhost",
-          port: 5000,
+          host: "noom-lms-server.onrender.com",
+          port: 443,
           path: "/peerjs",
-        });
-        loadPeerListeners(peer, localStream);
-      };
+          secure: true,
+        })
+        loadPeerListeners(peer, localStream)
+      }
 
       const loadPeerListeners = (peer, stream) => {
         peer.on("open", (id) => {
-          console.log("MY ID: " + id);
+          //console.log("MY ID: " + id)
 
           socket.on("mute-all", (value) => {
-            const videoElement = document.querySelector(`.${myId}`);
+            const videoElement = document.querySelector(`.${myId}`)
             if (videoElement) {
-              const audioTrack = videoElement.srcObject.getAudioTracks()[0];
-              if (audioTrack) audioTrack.enabled = value;
-              setAudioEnabled(value);
+              const audioTrack = videoElement.srcObject.getAudioTracks()[0]
+              if (audioTrack) audioTrack.enabled = value
+              setAudioEnabled(value)
             }
-          });
+          })
 
           socket.on("room-board-on", async (userID) => {
-            instructor = userID;
-            const call = await peer.call(userID, stream);
+            instructor = userID
+            const call = await peer.call(userID, stream)
 
-            setIsBoard(true);
-            setIsDisplay(true);
+            setIsBoard(true)
+            setIsDisplay(true)
             call.on("stream", (boardStream) => {
-              addBoardStream(boardStream);
-            });
-          });
+              addBoardStream(boardStream)
+            })
+          })
 
           socket.on("room-board-off", () => {
-            instructor = null;
-            removeBoardStream();
-          });
+            instructor = null
+            removeBoardStream()
+          })
 
           socket.on("user-connected", async (userID) => {
-            console.log("Connecting to: " + userID);
+            console.log("Connecting to: " + userID)
             const call = await peer.call(userID, stream, {
               metadata: {
                 username: userRecord.username,
               },
-            });
+            })
 
-            let username = "LMS";
+            let username = "LMS"
             socket.on("username", (data) => {
-              username = data;
-            });
+              username = data
+            })
 
             call.on("stream", (userVideoStream) => {
-              addVideoStream(userID, userVideoStream, username);
-            });
+              addVideoStream(userID, userVideoStream, username)
+            })
 
             call.on("data", (data) => {
-              console.log("Received custom data from User 2: " + data);
-            });
-          });
+              console.log("Received custom data from User 2: " + data)
+            })
+          })
 
           socket.on("user-disconnected", (userID) => {
-            removeVideoStream(userID);
-          });
+            removeVideoStream(userID)
+          })
 
           socket.on("message", (msg) => {
-            if (msg.userId === myId) msg.username = "You";
-            else msg.username = msg.username.substring(0, 6);
-            setMessages((prevMessages) => [...prevMessages, msg]);
-          });
-        });
+            if (msg.userId === myId) msg.username = "You"
+            else msg.username = msg.username.substring(0, 6)
+            setMessages((prevMessages) => [...prevMessages, msg])
+          })
+        })
 
         peer.on("call", (call) => {
-          socket.emit("username", call.peer, userRecord.username);
+          socket.emit("username", call.peer, userRecord.username)
 
-          if (instructor === myId && boardStream) call.answer(boardStream);
-          else call.answer(stream);
+          if (instructor === myId && boardStream) call.answer(boardStream)
+          else call.answer(stream)
 
           call.on("stream", (userVideoStream) => {
-            const existingVideoElement = document.getElementById(call.peer);
+            const existingVideoElement = document.getElementById(call.peer)
             if (!existingVideoElement)
-              addVideoStream(
-                call.peer,
-                userVideoStream,
-                call.metadata.username
-              );
-          });
-        });
-      };
-    });
+              addVideoStream(call.peer, userVideoStream, call.metadata.username)
+          })
+        })
+      }
+    })
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    window.addEventListener("beforeunload", handleBeforeUnload)
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      socket.off("connect");
-      socket.disconnect();
-    };
-  }, [peers]);
+      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+      socket.off("connect")
+      socket.disconnect()
+    }
+  }, [peers])
 
   const handleBeforeUnload = () => {
     if (socket) {
-      socket.off("connect");
-      socket.disconnect();
+      socket.off("connect")
+      socket.disconnect()
     }
-  };
+  }
 
   const handleResize = () => {
-    setIsPhone(window.innerWidth < 1057);
-  };
+    setIsPhone(window.innerWidth < 1057)
+  }
 
   const addBoardStream = (stream) => {
-    if (presentationRef.current) presentationRef.current.srcObject = stream;
-  };
+    if (presentationRef.current) presentationRef.current.srcObject = stream
+  }
 
   const removeBoardStream = () => {
-    setIsDisplay(false);
-    setIsBoard(false);
-    if (presentationRef.current) presentationRef.current.srcObject = null;
-  };
+    setIsDisplay(false)
+    setIsBoard(false)
+    if (presentationRef.current) presentationRef.current.srcObject = null
+  }
 
   const addVideoStream = (userID, stream, username) => {
-    removeVideoStream(userID);
-    const videoElement = document.createElement("video");
-    videoElement.srcObject = stream;
-    videoElement.id = userID;
-    videoElement.className = userID;
-    videoElement.classList.add("video-stream");
-    videoElement.setAttribute("autoplay", "");
-    videoElement.setAttribute("playsinline", "");
+    removeVideoStream(userID)
+    const videoElement = document.createElement("video")
+    videoElement.srcObject = stream
+    videoElement.id = userID
+    videoElement.className = userID
+    videoElement.classList.add("video-stream")
+    videoElement.setAttribute("autoplay", "")
+    videoElement.setAttribute("playsinline", "")
     videoElement.addEventListener("loadedmetadata", () => {
-      videoElement.play();
-    });
+      videoElement.play()
+    })
 
-    const label = document.createElement("label");
-    label.textContent = `${username}`;
+    const label = document.createElement("label")
+    label.textContent = `${username}`
 
-    const videoContainer = document.createElement("div");
-    videoContainer.id = userID;
-    videoContainer.className = "video-stream-container";
-    videoContainer.appendChild(videoElement);
-    videoContainer.appendChild(label);
+    const videoContainer = document.createElement("div")
+    videoContainer.id = userID
+    videoContainer.className = "video-stream-container"
+    videoContainer.appendChild(videoElement)
+    videoContainer.appendChild(label)
 
-    if (videoGridRef.current) videoGridRef.current.append(videoContainer);
-  };
+    if (videoGridRef.current) videoGridRef.current.append(videoContainer)
+  }
 
   const removeVideoStream = (userID) => {
-    const existingVideoElement = document.getElementById(userID);
+    const existingVideoElement = document.getElementById(userID)
     if (existingVideoElement) {
-      existingVideoElement.srcObject = null;
-      existingVideoElement.remove();
+      existingVideoElement.srcObject = null
+      existingVideoElement.remove()
     }
-  };
+  }
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      handleSendMessage();
+      handleSendMessage()
     }
-  };
+  }
 
   const handleSendMessage = () => {
     const obj = {
       msg: message,
       username: userRecord.username,
       img: userRecord.img,
-    };
-    socket.emit("message", obj);
-    setMessage("");
-  };
+    }
+    socket.emit("message", obj)
+    setMessage("")
+  }
 
   const toggleVideo = () => {
-    const videoElement = document.querySelector(`.${myId}`);
+    const videoElement = document.querySelector(`.${myId}`)
     if (videoElement) {
-      const videoTrack = videoElement.srcObject.getVideoTracks()[0];
-      if (videoTrack) videoTrack.enabled = !videoEnabled;
-      setVideoEnabled(!videoEnabled);
+      const videoTrack = videoElement.srcObject.getVideoTracks()[0]
+      if (videoTrack) videoTrack.enabled = !videoEnabled
+      setVideoEnabled(!videoEnabled)
     }
-  };
+  }
 
   const toggleAudio = () => {
-    const videoElement = document.querySelector(`.${myId}`);
+    const videoElement = document.querySelector(`.${myId}`)
     if (videoElement) {
-      const audioTrack = videoElement.srcObject.getAudioTracks()[0];
-      if (audioTrack) audioTrack.enabled = !audioEnabled;
-      setAudioEnabled(!audioEnabled);
+      const audioTrack = videoElement.srcObject.getAudioTracks()[0]
+      if (audioTrack) audioTrack.enabled = !audioEnabled
+      setAudioEnabled(!audioEnabled)
     }
-  };
+  }
 
   const toggleMuteAll = () => {
-    socket.emit("mute-all", muteAllEnabled);
-    setMuteAllEnabled(!muteAllEnabled);
-  };
+    socket.emit("mute-all", muteAllEnabled)
+    setMuteAllEnabled(!muteAllEnabled)
+  }
 
   const toggleChat = () => {
-    setIsChatVisible(!isChatVisible);
-  };
+    setIsChatVisible(!isChatVisible)
+  }
 
   const toggleParticipants = () => {
-    setParticipants(!participants);
-    setMeetingDetails(false);
-  };
+    setParticipants(!participants)
+    setMeetingDetails(false)
+  }
 
   const toggleMeetingDetails = () => {
-    setMeetingDetails(!meetingDetails);
-    setParticipants(false);
-  };
+    setMeetingDetails(!meetingDetails)
+    setParticipants(false)
+  }
 
   const leaveMeeting = () => {
     if (socket) {
-      socket.off("connect");
-      socket.disconnect();
+      socket.off("connect")
+      socket.disconnect()
     }
 
-    toast.success("You left the meeting!");
-    dispatch(toggleLogin());
-    navigate(`/lecture/${room}`);
-  };
+    toast.success("You left the meeting!")
+    dispatch(toggleLogin())
+    navigate(`/lecture/${room}`)
+  }
 
   return (
     <div className={`container`}>
@@ -402,7 +402,10 @@ export default function Room() {
                       <label className="msg-date">{obj.date}</label>
                     </div>
                     <div className="msg-bottom">
-                      <img src={obj.img} alt="User" />
+                      <img
+                        src={obj.img.length > 0 ? obj.img[0] : UserImg}
+                        alt="User"
+                      />
                       <p className="msg">{obj.msg}</p>
                     </div>
                   </div>
@@ -512,5 +515,5 @@ export default function Room() {
         </div>
       </div>
     </div>
-  );
+  )
 }
