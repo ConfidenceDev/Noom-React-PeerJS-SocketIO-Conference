@@ -64,6 +64,7 @@ export default function Room() {
   const videoGridRef = useRef()
   const presentationRef = useRef()
   const ulRef = useRef()
+  const calls = {}
 
   let uniqueId = uuidv4()
   const nav =
@@ -186,32 +187,36 @@ export default function Room() {
               userId = data.userId
             })
 
-            setPeers((prevConnections) => [
+            /*setPeers((prevConnections) => [
               ...prevConnections,
               { userID, call },
-            ])
+            ])*/
+            calls[userID] = call
             call.on("stream", (userVideoStream) => {
+              console.log(calls)
               addVideoStream(userID, userVideoStream, username)
             })
           })
 
           socket.on("user-disconnected", (userID) => {
-            const disconnectedConnection = peers.find(
-              (connection) => connection.peerID === userID
-            )
+            console.log(calls)
+            if (calls[userID]) calls[userID].close()
 
-            console.log(peers)
+            /*const disconnectedConnection = peers.find(
+              (connection) => connection.userID === userID
+            )
+            
             console.log(disconnectedConnection)
             if (disconnectedConnection) {
               const { call } = disconnectedConnection
               call.close()
               setPeers((prevConnections) =>
                 prevConnections.filter(
-                  (connection) => connection.peerID !== userID
+                  (connection) => connection.userID !== userID
                 )
               )
-            }
-            console.log(peers)
+            }*/
+            console.log(calls)
             removeVideoStream(userID)
           })
 
@@ -226,7 +231,7 @@ export default function Room() {
 
         peer.on("call", (call) => {
           if (
-            call.metadata.userId !== undefined &&
+            call.metadata !== undefined &&
             userRecord.userId === call.metadata.userId
           ) {
             leave()
@@ -267,7 +272,7 @@ export default function Room() {
       socket.off("connect")
       socket.disconnect()
     }
-  }, [peers])
+  }, [])
 
   const handleBeforeUnload = () => {
     if (socket) {
