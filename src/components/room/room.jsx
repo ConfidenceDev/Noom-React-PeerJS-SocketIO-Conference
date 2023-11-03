@@ -204,7 +204,7 @@ export default function Room() {
             console.log(disconnectedConnection)
             if (disconnectedConnection) {
               const { call } = disconnectedConnection
-              call.destroy()
+              call.close()
               setPeers((prevConnections) =>
                 prevConnections.filter(
                   (connection) => connection.peerID !== userID
