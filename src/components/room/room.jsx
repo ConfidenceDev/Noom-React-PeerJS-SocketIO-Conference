@@ -225,6 +225,13 @@ export default function Room() {
               addVideoStream(call.peer, userVideoStream, call.metadata.username)
           })
         })
+
+        peer.on("disconnect", () => {
+          peer.connections.forEach((conn) => {
+            conn.close()
+          })
+          peer.destroy()
+        })
       }
     })
 
