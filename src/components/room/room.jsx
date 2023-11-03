@@ -193,7 +193,7 @@ export default function Room() {
             ])*/
             calls[userID] = call
             call.on("stream", (userVideoStream) => {
-              console.log(calls)
+              //console.log(calls)
               addVideoStream(userID, userVideoStream, username)
             })
           })
