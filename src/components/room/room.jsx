@@ -59,9 +59,10 @@ export default function Room() {
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState([])
   const [isPhone, setIsPhone] = useState(false)
-  const [peers, setPeers] = useState([])
+  const [myPeer, setMyPeer] = useState(null)
   const videoGridRef = useRef()
   const presentationRef = useRef()
+  const ulRef = useRef()
 
   let uniqueId = uuidv4()
   const nav =
@@ -142,7 +143,7 @@ export default function Room() {
       const loadPeerListeners = (peer, stream) => {
         peer.on("open", (id) => {
           //console.log("MY ID: " + id)
-
+          setMyPeer(peer)
           socket.on("mute-all", (value) => {
             const videoElement = document.querySelector(`.${myId}`)
             if (videoElement) {
@@ -194,13 +195,24 @@ export default function Room() {
           })
 
           socket.on("user-disconnected", (userID) => {
+            const peerConnections = peer.connections
+            const disconnectedPeerConnection = peerConnections.find((conn) => {
+              return conn.peer === userID
+            })
+            disconnectedPeerConnection.close()
+            peerConnections.splice(
+              peerConnections.indexOf(disconnectedPeerConnection),
+              1
+            )
             removeVideoStream(userID)
           })
 
           socket.on("message", (msg) => {
             if (msg.userId === myId) msg.username = "You"
-            else msg.username = msg.username.substring(0, 6)
+            //else msg.username = msg.username.substring(0, 6)
             setMessages((prevMessages) => [...prevMessages, msg])
+            if (ulRef.current)
+              ulRef.current.scrollTop = ulRef.current.scrollHeight
           })
         })
 
@@ -244,7 +256,7 @@ export default function Room() {
       socket.off("connect")
       socket.disconnect()
     }
-  }, [peers])
+  }, [])
 
   const handleBeforeUnload = () => {
     if (socket) {
@@ -354,6 +366,7 @@ export default function Room() {
   }
 
   const leave = () => {
+    if (myPeer !== null) myPeer.destroy()
     if (socket) {
       socket.off("connect")
       socket.disconnect()
@@ -415,7 +428,7 @@ export default function Room() {
               </div>
               <hr />
             </div>
-            <ul className="stream-right-mid">
+            <ul ref={ulRef} className="stream-right-mid">
               {messages.map((obj, index) => (
                 <li key={index}>
                   <div className="msg-container">

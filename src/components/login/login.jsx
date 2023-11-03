@@ -85,7 +85,7 @@ export default function Login() {
       })
       .catch((error) => {
         console.log(error)
-        toast.error(error.message)
+        toast.error("You are not registered for this course!")
         setIsDisabled(false)
       })
   }
