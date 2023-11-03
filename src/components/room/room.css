@@ -348,9 +348,23 @@
 }
 
 @media (max-width: 1057px) {
+  .stream-container {
+    height: 84vh;
+  }
+
   .bottom-nav {
+    height: 16vh;
+    gap: 4px;
     overflow-x: scroll;
     overflow-y: hidden;
+  }
+
+  .bottom-nav > div:nth-child(2) {
+    margin-right: 24px;
+  }
+
+  .bottom-nav > div:nth-last-child(2) {
+    margin-left: 24px;
   }
 
   .nav-icon,

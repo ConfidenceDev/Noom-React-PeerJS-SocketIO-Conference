@@ -16,6 +16,16 @@ export default function Login() {
   const { room } = useParams()
   const [isDisabled, setIsDisabled] = useState(false)
 
+  useEffect(() => {
+    fetch(`https://noom-lms-server.onrender.com`)
+      .then((response) => {
+        console.log(response.status)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }, [])
+
   const loadRoom = () => {
     loadUser()
   }
