@@ -38,6 +38,7 @@ let socket = null
 let myId
 let boardStream = null
 let instructor = null
+const calls = {}
 
 export default function Room() {
   const [videoEnabled, setVideoEnabled] = useState(true)
@@ -64,7 +65,6 @@ export default function Room() {
   const videoGridRef = useRef()
   const presentationRef = useRef()
   const ulRef = useRef()
-  const calls = {}
 
   let uniqueId = uuidv4()
   const nav =
@@ -199,7 +199,7 @@ export default function Room() {
           })
 
           socket.on("user-disconnected", (userID) => {
-            console.log(calls)
+            //console.log(calls)
             if (calls[userID]) calls[userID].close()
 
             /*const disconnectedConnection = peers.find(
@@ -216,7 +216,7 @@ export default function Room() {
                 )
               )
             }*/
-            console.log(calls)
+            //console.log(calls)
             removeVideoStream(userID)
           })
 
