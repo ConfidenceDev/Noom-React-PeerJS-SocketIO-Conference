@@ -60,6 +60,7 @@ export default function Room() {
   const [messages, setMessages] = useState([])
   const [isPhone, setIsPhone] = useState(false)
   const [myPeer, setMyPeer] = useState(null)
+  const [peers, setPeers] = useState([])
   const videoGridRef = useRef()
   const presentationRef = useRef()
   const ulRef = useRef()
@@ -185,25 +186,32 @@ export default function Room() {
               userId = data.userId
             })
 
+            setPeers((prevConnections) => [
+              ...prevConnections,
+              { userID, call },
+            ])
             call.on("stream", (userVideoStream) => {
               addVideoStream(userID, userVideoStream, username)
-            })
-
-            call.on("data", (data) => {
-              console.log("Received custom data from User 2: " + data)
             })
           })
 
           socket.on("user-disconnected", (userID) => {
-            const peerConnections = peer.connections
-            const disconnectedPeerConnection = peerConnections.find((conn) => {
-              return conn.peer === userID
-            })
-            disconnectedPeerConnection.close()
-            peerConnections.splice(
-              peerConnections.indexOf(disconnectedPeerConnection),
-              1
+            const disconnectedConnection = peers.find(
+              (connection) => connection.peerID === userID
             )
+
+            console.log(peers)
+            console.log(disconnectedConnection)
+            if (disconnectedConnection) {
+              const { call } = disconnectedConnection
+              call.destroy()
+              setPeers((prevConnections) =>
+                prevConnections.filter(
+                  (connection) => connection.peerID !== userID
+                )
+              )
+            }
+            console.log(peers)
             removeVideoStream(userID)
           })
 
@@ -217,7 +225,10 @@ export default function Room() {
         })
 
         peer.on("call", (call) => {
-          if (userRecord.userId === call.metadata.userId) {
+          if (
+            call.metadata.userId !== undefined &&
+            userRecord.userId === call.metadata.userId
+          ) {
             leave()
             toast.success("A User with this ID already exists!")
             return
@@ -256,7 +267,7 @@ export default function Room() {
       socket.off("connect")
       socket.disconnect()
     }
-  }, [])
+  }, [peers])
 
   const handleBeforeUnload = () => {
     if (socket) {
