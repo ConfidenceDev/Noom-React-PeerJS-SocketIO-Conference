@@ -449,84 +449,92 @@ export default function Room() {
         )}
       </div>
       <div className="bottom-nav">
-        <div className="nav-btn" onClick={toggleVideo}>
-          {videoEnabled ? (
-            <BsFillCameraVideoOffFill className="nav-icon" />
-          ) : (
-            <BsFillCameraVideoFill className="nav-icon" />
-          )}
-          <label>{videoEnabled ? "Hide Video" : "Show Video"}</label>
-        </div>
-        <div className="nav-btn" onClick={toggleAudio}>
-          {audioEnabled ? (
-            <BsFillMicMuteFill className="nav-icon" />
-          ) : (
-            <BsFillMicFill className="nav-icon" />
-          )}
-          <label> {audioEnabled ? "Mute" : "Unmute"}</label>
-        </div>
-        <div className="nav-btn" onClick={toggleChat}>
-          <BsFillChatTextFill className="nav-icon" />
-          <label> {isChatVisible ? "Hide Chat" : "Show Chat"}</label>
-        </div>
-        <div className="nav-btn">
-          <BiSolidCaptions className="nav-icon" />
-          <label>Caption</label>
-        </div>
-        <div className="nav-btn">
-          <PiPresentationChartFill className="nav-icon" onClick={startBoard} />
-          <label>Presentation</label>
-        </div>
-        {/* ========== Admin function =============*/}
-        {isAdmin && (
-          <div className="nav-btn">
-            <BsFillRecordCircleFill className="nav-icon" />
-            <label>Record</label>
-          </div>
-        )}
-        {isAdmin && (
-          <div className="nav-btn" onClick={toggleMuteAll}>
-            {muteAllEnabled ? (
-              <FaVolumeUp className="nav-icon" />
+        <div className="bottom-container">
+          <div className="nav-btn" onClick={toggleVideo}>
+            {videoEnabled ? (
+              <BsFillCameraVideoOffFill className="nav-icon" />
             ) : (
-              <FaVolumeMute className="nav-icon" />
+              <BsFillCameraVideoFill className="nav-icon" />
             )}
-            <label> {muteAllEnabled ? "UnMute All" : "Mute All"}</label>
+            <label>{videoEnabled ? "Hide Video" : "Show Video"}</label>
           </div>
-        )}
-        {isAdmin && (
+          <div className="nav-btn" onClick={toggleAudio}>
+            {audioEnabled ? (
+              <BsFillMicMuteFill className="nav-icon" />
+            ) : (
+              <BsFillMicFill className="nav-icon" />
+            )}
+            <label> {audioEnabled ? "Mute" : "Unmute"}</label>
+          </div>
+          <div className="nav-btn" onClick={toggleChat}>
+            <BsFillChatTextFill className="nav-icon" />
+            <label> {isChatVisible ? "Hide Chat" : "Show Chat"}</label>
+          </div>
           <div className="nav-btn">
-            <GiBootKick className="nav-icon" />
-            <label>Kick</label>
+            <BiSolidCaptions className="nav-icon" />
+            <label>Caption</label>
           </div>
-        )}
-        {/* ========== Admin function =============*/}
-        <div className="nav-btn">
-          <HiHandRaised className="nav-icon" />
-          <label>Raise Hand</label>
-        </div>
-        <div className="nav-btn">
-          <VscReactions className="nav-icon" />
-          <label>Reactions</label>
-        </div>
-        <div className="nav-btn" onClick={toggleParticipants}>
-          <div className="mem-cover">
-            <label className="mem-count">{members}</label>
-            <FaPeopleGroup className="mem-icon" />
+          <div className="nav-btn">
+            <PiPresentationChartFill
+              className="nav-icon"
+              onClick={startBoard}
+            />
+            <label>Presentation</label>
           </div>
-          <label>Participants</label>
-        </div>
-        <div className="nav-btn">
-          <FiMoreHorizontal className="nav-icon" />
-          <label>More Options</label>
-        </div>
-        <div className="meeting-details nav-btn" onClick={toggleMeetingDetails}>
-          <BsFillInfoCircleFill className="nav-icon" />
-          <label>Meeting Details</label>
-        </div>
-        <div className="leave-meeting nav-btn" onClick={leaveMeeting}>
-          <IoExit className="nav-leave-icon" />
-          <label>Leave Meeting</label>
+          {/* ========== Admin function =============*/}
+          {isAdmin && (
+            <div className="nav-btn">
+              <BsFillRecordCircleFill className="nav-icon" />
+              <label>Record</label>
+            </div>
+          )}
+          {isAdmin && (
+            <div className="nav-btn" onClick={toggleMuteAll}>
+              {muteAllEnabled ? (
+                <FaVolumeUp className="nav-icon" />
+              ) : (
+                <FaVolumeMute className="nav-icon" />
+              )}
+              <label> {muteAllEnabled ? "UnMute All" : "Mute All"}</label>
+            </div>
+          )}
+          {isAdmin && (
+            <div className="nav-btn">
+              <GiBootKick className="nav-icon" />
+              <label>Kick</label>
+            </div>
+          )}
+          {/* ========== Admin function =============*/}
+          <div className="nav-btn">
+            <HiHandRaised className="nav-icon" />
+            <label>Raise Hand</label>
+          </div>
+          <div className="nav-btn">
+            <VscReactions className="nav-icon" />
+            <label>Reactions</label>
+          </div>
+          <div className="nav-btn" onClick={toggleParticipants}>
+            <div className="mem-cover">
+              <label className="mem-count">{members}</label>
+              <FaPeopleGroup className="mem-icon" />
+            </div>
+            <label>Participants</label>
+          </div>
+          <div className="nav-btn">
+            <FiMoreHorizontal className="nav-icon" />
+            <label>More Options</label>
+          </div>
+          <div
+            className="meeting-details nav-btn"
+            onClick={toggleMeetingDetails}
+          >
+            <BsFillInfoCircleFill className="nav-icon" />
+            <label>Meeting Details</label>
+          </div>
+          <div className="leave-meeting nav-btn" onClick={leaveMeeting}>
+            <IoExit className="nav-leave-icon" />
+            <label>Leave Meeting</label>
+          </div>
         </div>
       </div>
     </div>
