@@ -10,7 +10,7 @@ import {
   BsFillRecordCircleFill,
   BsFillInfoCircleFill,
 } from "react-icons/bs"
-import { BiSolidCaptions } from "react-icons/bi"
+import { BiSolidCaptions, BiExpand, BiCollapse } from "react-icons/bi"
 import { PiPresentationChartFill } from "react-icons/pi"
 import { HiHandRaised } from "react-icons/hi2"
 import { VscReactions } from "react-icons/vsc"
@@ -382,6 +382,12 @@ export default function Room() {
   }
 
   const leave = () => {
+    const videoElement = document.querySelector(`.${myId}`)
+    if (videoElement) {
+      const tracks = videoElement.srcObject.getTracks()
+      tracks.forEach((track) => track.stop())
+    }
+
     if (myPeer !== null) myPeer.destroy()
     if (socket) {
       socket.off("connect")
@@ -424,13 +430,16 @@ export default function Room() {
         >
           <div className="stream-grid-cover">
             {isBoard && (
-              <video
-                ref={presentationRef}
-                className={`presentation ${isDisplay ? "show" : "hide"}`}
-                muted
-                autoPlay
-                playsInline
-              ></video>
+              <div className="presentation-container">
+                <video
+                  ref={presentationRef}
+                  className={`presentation ${isDisplay ? "show" : "hide"}`}
+                  muted
+                  autoPlay
+                  playsInline
+                ></video>
+                <BiExpand className="toggle-presentation" />
+              </div>
             )}
             <div ref={videoGridRef} className="stream-grid"></div>
           </div>
