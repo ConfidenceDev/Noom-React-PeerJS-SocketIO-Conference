@@ -412,6 +412,11 @@
     margin-left: 24px;
   }
 
+  .toggle-presentation {
+    width: 20px;
+    height: 20px;
+  }
+
   .nav-icon,
   .mem-cover,
   .nav-leave-icon {
