@@ -10,14 +10,12 @@ import {
   BsFillRecordCircleFill,
   BsFillInfoCircleFill,
 } from "react-icons/bs"
-import { BiSolidCaptions } from "react-icons/bi"
+import { BiExpand, BiCollapse } from "react-icons/bi"
 import { PiPresentationChartFill } from "react-icons/pi"
 import { HiHandRaised } from "react-icons/hi2"
-import { VscReactions } from "react-icons/vsc"
 import { FaPeopleGroup } from "react-icons/fa6"
 import { FaVolumeMute, FaVolumeUp } from "react-icons/fa"
 import { GiBootKick } from "react-icons/gi"
-import { FiMoreHorizontal } from "react-icons/fi"
 import { IoExit } from "react-icons/io5"
 import { GrSend } from "react-icons/gr"
 import { AiOutlineClose } from "react-icons/ai"
@@ -48,6 +46,7 @@ export default function Room() {
   const [participants, setParticipants] = useState(false)
   const [meetingDetails, setMeetingDetails] = useState(false)
   const [isBoard, setIsBoard] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
   const [isDisplay, setIsDisplay] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const { room } = useParams()
@@ -97,6 +96,7 @@ export default function Room() {
           instructor = null
           setIsDisplay(false)
           setIsBoard(false)
+          setIsFullScreen(false)
           socket.emit("room-board-off", room, myId)
         })
       })
@@ -161,6 +161,7 @@ export default function Room() {
 
             setIsBoard(true)
             setIsDisplay(true)
+            setIsFullScreen(false)
             call.on("stream", (boardStream) => {
               addBoardStream(boardStream)
             })
@@ -168,6 +169,7 @@ export default function Room() {
 
           socket.on("room-board-off", () => {
             instructor = null
+            setIsFullScreen(false)
             removeBoardStream()
           })
 
@@ -371,6 +373,10 @@ export default function Room() {
     setIsChatVisible(!isChatVisible)
   }
 
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen)
+  }
+
   const toggleParticipants = () => {
     setParticipants(!participants)
     setMeetingDetails(false)
@@ -382,6 +388,12 @@ export default function Room() {
   }
 
   const leave = () => {
+    const videoElement = document.querySelector(`.${myId}`)
+    if (videoElement) {
+      const tracks = videoElement.srcObject.getTracks()
+      tracks.forEach((track) => track.stop())
+    }
+
     if (myPeer !== null) myPeer.destroy()
     if (socket) {
       socket.off("connect")
@@ -424,15 +436,37 @@ export default function Room() {
         >
           <div className="stream-grid-cover">
             {isBoard && (
-              <video
-                ref={presentationRef}
-                className={`presentation ${isDisplay ? "show" : "hide"}`}
-                muted
-                autoPlay
-                playsInline
-              ></video>
+              <div
+                className={`presentation-container ${
+                  isDisplay ? "show" : "hide"
+                }`}
+              >
+                <video
+                  ref={presentationRef}
+                  className={`presentation`}
+                  muted
+                  autoPlay
+                  playsInline
+                ></video>
+                {isFullScreen ? (
+                  <BiCollapse
+                    className="toggle-presentation"
+                    onClick={toggleFullScreen}
+                  />
+                ) : (
+                  <BiExpand
+                    className="toggle-presentation"
+                    onClick={toggleFullScreen}
+                  />
+                )}
+              </div>
             )}
-            <div ref={videoGridRef} className="stream-grid"></div>
+            <div
+              ref={videoGridRef}
+              className={`stream-grid ${
+                isFullScreen ? "hide-board" : "show-board"
+              }`}
+            ></div>
           </div>
         </div>
         {isChatVisible && (
@@ -507,10 +541,6 @@ export default function Room() {
             <label> {isChatVisible ? "Hide Chat" : "Show Chat"}</label>
           </div>
           <div className="nav-btn">
-            <BiSolidCaptions className="nav-icon" />
-            <label>Caption</label>
-          </div>
-          <div className="nav-btn">
             <PiPresentationChartFill
               className="nav-icon"
               onClick={startBoard}
@@ -545,20 +575,12 @@ export default function Room() {
             <HiHandRaised className="nav-icon" />
             <label>Raise Hand</label>
           </div>
-          <div className="nav-btn">
-            <VscReactions className="nav-icon" />
-            <label>Reactions</label>
-          </div>
           <div className="nav-btn" onClick={toggleParticipants}>
             <div className="mem-cover">
               <label className="mem-count">{members}</label>
               <FaPeopleGroup className="mem-icon" />
             </div>
             <label>Participants</label>
-          </div>
-          <div className="nav-btn">
-            <FiMoreHorizontal className="nav-icon" />
-            <label>More Options</label>
           </div>
           <div
             className="meeting-details nav-btn"

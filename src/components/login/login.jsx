@@ -41,6 +41,7 @@ export default function Login() {
       return toast.error("Please enter your student id!")
 
     //spacemars666@gmail.com
+    //decodeanalytical@gmail.com
     setIsDisabled(true)
     const options = {
       method: "POST",
@@ -52,7 +53,7 @@ export default function Login() {
       }),
     }
     fetch(
-      `https://decode-mnjh.onrender.com/api/admin/joinmeeting/${room}`,
+      `https://server-eight-beige.vercel.app/api/admin/joinmeeting/${room}`,
       options
     )
       .then((response) => response.json())
