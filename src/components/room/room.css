@@ -442,7 +442,7 @@
     flex-direction: column;
   }
 
-  .presentation {
+  .presentation-container {
     width: 93%;
   }
 
@@ -462,6 +462,6 @@
 
 @media (max-width: 415px) {
   .bottom-container {
-    padding-left: 100%;
+    padding-left: 50%;
   }
 }
