@@ -122,6 +122,17 @@
   object-fit: cover;
 }
 
+.video-stream-container img {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  top: 4px;
+  right: 8px;
+  background-color: var(--chat);
+  border-radius: 50%;
+  padding: 4px;
+}
+
 .video-stream-container label {
   position: absolute;
   bottom: 4px;

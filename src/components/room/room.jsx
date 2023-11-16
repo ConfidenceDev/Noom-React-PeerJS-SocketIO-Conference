@@ -20,6 +20,7 @@ import { IoExit } from "react-icons/io5"
 import { GrSend } from "react-icons/gr"
 import { AiOutlineClose } from "react-icons/ai"
 import UserImg from "../../assets/user1.png"
+import MuteImg from "../../assets/mute.png"
 import Peer from "peerjs"
 import { v4 as uuidv4 } from "uuid"
 import Modal from "../modal/modal"
@@ -176,6 +177,20 @@ export default function Room() {
             removeBoardStream()
           })
 
+          socket.on("mute-me", (data) => {
+            const videoContainer = document.querySelector(`#${data.userId}`)
+            const muteIcon = videoContainer.querySelector("img")
+            if (!muteIcon) return
+
+            if (data.audioEnabled) {
+              muteIcon.classList.remove("hide")
+              muteIcon.classList.add("show")
+            } else {
+              muteIcon.classList.remove("show")
+              muteIcon.classList.add("hide")
+            }
+          })
+
           socket.on("user-connected", async (userID) => {
             console.log("Connecting to: " + userID)
             const call = await peer.call(userID, stream, {
@@ -325,6 +340,10 @@ export default function Room() {
       videoElement.play()
     })
 
+    const muteIcon = document.createElement("img")
+    muteIcon.setAttribute("src", MuteImg)
+    muteIcon.className = "video-mute-icon hide"
+
     const label = document.createElement("label")
     label.textContent = `${username}`
 
@@ -333,6 +352,7 @@ export default function Room() {
     videoContainer.className = "video-stream-container"
     videoContainer.appendChild(videoElement)
     videoContainer.appendChild(label)
+    videoContainer.appendChild(muteIcon)
 
     if (videoGridRef.current) videoGridRef.current.append(videoContainer)
   }
@@ -372,6 +392,25 @@ export default function Room() {
 
   const toggleAudio = () => {
     const videoElement = document.querySelector(`.${myId}`)
+    const videoContainer = document.querySelector(`#${myId}`)
+
+    const muteIcon = videoContainer.querySelector("img")
+    if (!muteIcon) return
+
+    if (audioEnabled) {
+      muteIcon.classList.remove("hide")
+      muteIcon.classList.add("show")
+    } else {
+      muteIcon.classList.remove("show")
+      muteIcon.classList.add("hide")
+    }
+
+    const doc = {
+      userId: myId,
+      audioEnabled: audioEnabled,
+    }
+    socket.emit("mute-me", doc)
+
     if (videoElement) {
       const audioTrack = videoElement.srcObject.getAudioTracks()[0]
       if (audioTrack) audioTrack.enabled = !audioEnabled
