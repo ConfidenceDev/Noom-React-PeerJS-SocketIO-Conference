@@ -92,7 +92,7 @@ label {
 
 /*============ Kick ================= */
 .kick-members {
-  max-width: 900px;
+  max-width: 600px;
   min-width: 400px;
   max-height: 75vh;
   overflow-y: scroll;

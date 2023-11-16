@@ -53,13 +53,16 @@
 }
 
 .toggle-presentation {
-  width: 24px;
-  height: 24px;
-  color: var(--grey);
+  width: 28px;
+  height: 28px;
+  color: var(--bg-blue);
   position: absolute;
   bottom: 1%;
   right: 1%;
   cursor: pointer;
+  background-color: var(--chat);
+  border-radius: 50%;
+  padding: 4px;
 }
 
 .toggle-presentation:hover {
