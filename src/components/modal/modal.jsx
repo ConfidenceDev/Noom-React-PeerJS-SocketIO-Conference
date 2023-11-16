@@ -1,32 +1,35 @@
-import { useState } from "react";
-import { AiOutlineClose } from "react-icons/ai";
-import { BiCopy } from "react-icons/bi";
-import "./modal.css";
-import { toast } from "react-toastify";
+import { useState } from "react"
+import { AiOutlineClose } from "react-icons/ai"
+import { BiCopy } from "react-icons/bi"
+import "./modal.css"
+import { toast } from "react-toastify"
 
-export default function Modal({ meeting, members, memCount, roomDetails }) {
-  const [participants, setParticipants] = useState(members);
-  const [meetingDetails, setMeetingDetails] = useState(meeting);
-  const currentURL = window.location.href;
+export default function Modal({
+  meeting,
+  isParticipants,
+  memCount,
+  roomDetails,
+}) {
+  const [participants, setParticipants] = useState(isParticipants)
+  const [meetingDetails, setMeetingDetails] = useState(meeting)
+  const currentURL = window.location.href
 
   const toggleMeetingDetails = () => {
-    setMeetingDetails(!meetingDetails);
-  };
+    setMeetingDetails(!meetingDetails)
+  }
 
   const toggleParticipants = () => {
-    setParticipants(!participants);
-  };
+    setParticipants(!participants)
+  }
 
   const copyRoom = () => {
-    navigator.clipboard.writeText(currentURL);
-    toast.success("Meeting URL copied!");
-  };
+    navigator.clipboard.writeText(currentURL)
+    toast.success("Meeting URL copied!")
+  }
 
   const toComma = () => {
-    return `${memCount
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")} Online`;
-  };
+    return `${memCount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} Online`
+  }
 
   return (
     <>
@@ -71,5 +74,5 @@ export default function Modal({ meeting, members, memCount, roomDetails }) {
         </div>
       )}
     </>
-  );
+  )
 }

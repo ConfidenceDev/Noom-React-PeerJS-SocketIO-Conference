@@ -15,6 +15,7 @@ export default function Login() {
   const loggedIn = useSelector((state) => state.value)
   const { room } = useParams()
   const [isDisabled, setIsDisabled] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     fetch(`https://noom-lms-server.onrender.com`)
@@ -42,6 +43,8 @@ export default function Login() {
 
     //spacemars666@gmail.com
     //decodeanalytical@gmail.com
+    //ebisedi@yahoo.com || lms198
+    setIsLoading(true)
     setIsDisabled(true)
     const options = {
       method: "POST",
@@ -77,6 +80,7 @@ export default function Login() {
           img: data.image,
         }
 
+        setIsLoading(false)
         setIsDisabled(false)
         dispatch(setMeetingAndUser(meeting, user))
         dispatch(toggleLogin())
@@ -88,6 +92,7 @@ export default function Login() {
         console.log(error)
         toast.error("You are not registered for this course!")
         setIsDisabled(false)
+        setIsLoading(false)
       })
   }
 
@@ -119,6 +124,9 @@ export default function Login() {
               >
                 Join Meeting
               </button>
+              <div
+                className={`loading-spinner ${isLoading ? "show" : "hide"}`}
+              ></div>
             </div>
             <hr />
           </div>

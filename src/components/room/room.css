@@ -55,7 +55,7 @@
 .toggle-presentation {
   width: 24px;
   height: 24px;
-  color: var(--light-grey);
+  color: var(--grey);
   position: absolute;
   bottom: 1%;
   right: 1%;

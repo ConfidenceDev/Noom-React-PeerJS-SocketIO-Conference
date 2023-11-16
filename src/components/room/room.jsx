@@ -23,6 +23,7 @@ import UserImg from "../../assets/user1.png"
 import Peer from "peerjs"
 import { v4 as uuidv4 } from "uuid"
 import Modal from "../modal/modal"
+import Kick from "../modal/kick"
 import "../modal/modal.css"
 import io from "socket.io-client"
 import { toast } from "react-toastify"
@@ -43,14 +44,16 @@ export default function Room() {
   const [audioEnabled, setAudioEnabled] = useState(true)
   const [muteAllEnabled, setMuteAllEnabled] = useState(false)
   const [isChatVisible, setIsChatVisible] = useState(true)
-  const [participants, setParticipants] = useState(false)
+  const [isParticipants, setIsParticipants] = useState(false)
   const [meetingDetails, setMeetingDetails] = useState(false)
   const [isBoard, setIsBoard] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [isDisplay, setIsDisplay] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [kick, setKick] = useState(false)
   const { room } = useParams()
   const navigate = useNavigate()
+  const [membersCount, setMembersCount] = useState("")
   const [members, setMembers] = useState([])
   const loggedIn = useSelector((state) => state.loggedIn)
   const meetingRecord = useSelector((state) => state.meeting)
@@ -119,7 +122,7 @@ export default function Room() {
       if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true)
 
       socket.on("nom", (data) => {
-        setMembers(data.toString())
+        setMembersCount(data.toString())
       })
 
       nav(getUserMediaOptions)
@@ -187,6 +190,12 @@ export default function Room() {
             socket.on("userRecord", (data) => {
               username = data.username
               userId = data.userId
+
+              const doc = {
+                userId: userId,
+                username: username,
+              }
+              setMembers((members) => [...members, doc])
             })
 
             /*setPeers((prevConnections) => [
@@ -251,8 +260,14 @@ export default function Room() {
 
           call.on("stream", (userVideoStream) => {
             const existingVideoElement = document.getElementById(call.peer)
-            if (!existingVideoElement)
+            if (!existingVideoElement) {
+              const doc = {
+                userId: call.metadata.userId,
+                username: call.metadata.username,
+              }
+              setMembers((members) => [...members, doc])
               addVideoStream(call.peer, userVideoStream, call.metadata.username)
+            }
           })
         })
 
@@ -364,9 +379,17 @@ export default function Room() {
     }
   }
 
+  const toggleRecord = () => {
+    toast.success("Coming soon")
+  }
+
   const toggleMuteAll = () => {
     socket.emit("mute-all", muteAllEnabled)
     setMuteAllEnabled(!muteAllEnabled)
+  }
+
+  const toggleKick = () => {
+    setKick(!kick)
   }
 
   const toggleChat = () => {
@@ -378,13 +401,13 @@ export default function Room() {
   }
 
   const toggleParticipants = () => {
-    setParticipants(!participants)
+    setIsParticipants(!isParticipants)
     setMeetingDetails(false)
   }
 
   const toggleMeetingDetails = () => {
     setMeetingDetails(!meetingDetails)
-    setParticipants(false)
+    setIsParticipants(false)
   }
 
   const leave = () => {
@@ -413,20 +436,22 @@ export default function Room() {
       {meetingDetails && (
         <Modal
           meeting={meetingDetails}
-          members={participants}
-          memCount={members}
+          isParticipants={isParticipants}
+          memCount={membersCount}
           roomDetails={meetingRecord.desc}
         />
       )}
 
-      {participants && (
+      {isParticipants && (
         <Modal
           meeting={meetingDetails}
-          members={participants}
-          memCount={members}
+          isParticipants={isParticipants}
+          memCount={membersCount}
           roomDetails={meetingRecord.desc}
         />
       )}
+
+      {kick && <Kick kick={kick} members={members} />}
 
       <div className="stream-container">
         <div
@@ -488,6 +513,7 @@ export default function Room() {
                     </div>
                     <div className="msg-bottom">
                       <img
+                        loading="lazy"
                         src={obj.img.length > 0 ? obj.img[0].path : UserImg}
                         alt="User"
                       />
@@ -549,7 +575,7 @@ export default function Room() {
           </div>
           {/* ========== Admin function =============*/}
           {isAdmin && (
-            <div className="nav-btn">
+            <div className="nav-btn" onClick={toggleRecord}>
               <BsFillRecordCircleFill className="nav-icon" />
               <label>Record</label>
             </div>
@@ -565,7 +591,7 @@ export default function Room() {
             </div>
           )}
           {isAdmin && (
-            <div className="nav-btn">
+            <div className="nav-btn" onClick={toggleKick}>
               <GiBootKick className="nav-icon" />
               <label>Kick</label>
             </div>
@@ -577,7 +603,7 @@ export default function Room() {
           </div>
           <div className="nav-btn" onClick={toggleParticipants}>
             <div className="mem-cover">
-              <label className="mem-count">{members}</label>
+              <label className="mem-count">{membersCount}</label>
               <FaPeopleGroup className="mem-icon" />
             </div>
             <label>Participants</label>

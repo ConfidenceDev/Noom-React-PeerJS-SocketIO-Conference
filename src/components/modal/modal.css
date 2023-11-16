@@ -34,6 +34,7 @@
   flex-direction: column;
   gap: 16px;
   z-index: 999;
+  margin-top: 40px;
 }
 
 .modal-top {
@@ -87,4 +88,60 @@ label {
 .close-btn:hover {
   opacity: 0.6;
   cursor: pointer;
+}
+
+/*============ Kick ================= */
+.kick-members {
+  max-width: 900px;
+  min-width: 400px;
+  max-height: 75vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+
+.kick-members li {
+  display: flex;
+  flex-direction: column;
+}
+
+.kick-members li .kick-item-user {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  row-gap: 8px;
+}
+
+.kick-members li label {
+  font-size: 1.1em;
+}
+
+.kick-members li input {
+  font-size: 1em;
+  border-radius: 4px;
+  background-color: var(--bg-blue);
+  padding: 8px 16px;
+  color: white;
+  cursor: pointer;
+}
+
+.kick-members li input:hover {
+  opacity: 0.8;
+}
+
+.kick-members hr {
+  margin: 8px 0;
+}
+
+/*========== Mobile ================= */
+@media (max-width: 954px) {
+  .modal-top .modal-header {
+    font-size: 1.1em;
+  }
+
+  p,
+  label {
+    font-size: 1em;
+  }
 }
