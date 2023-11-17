@@ -98,6 +98,8 @@ label {
   overflow-y: scroll;
   overflow-x: hidden;
   padding-right: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .kick-members li {
@@ -132,6 +134,14 @@ label {
 
 .kick-members hr {
   margin: 8px 0;
+}
+
+.kick-members .no-members {
+  justify-self: center;
+  align-self: center;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1em;
 }
 
 /*========== Mobile ================= */

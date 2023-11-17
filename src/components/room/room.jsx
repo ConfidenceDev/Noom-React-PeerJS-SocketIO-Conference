@@ -152,6 +152,13 @@ export default function Room() {
           setMyPeer(peer)
           socket.on("mute-all", (value) => {
             const videoElement = document.querySelector(`.${myId}`)
+            updateMuteIcon(myId, value)
+            const doc = {
+              userId: myId,
+              audioEnabled: value,
+            }
+            socket.emit("mute-me", doc)
+
             if (videoElement) {
               const audioTrack = videoElement.srcObject.getAudioTracks()[0]
               if (audioTrack) audioTrack.enabled = value
@@ -178,18 +185,23 @@ export default function Room() {
           })
 
           socket.on("mute-me", (data) => {
-            const videoContainer = document.querySelector(`#${data.userId}`)
+            updateMuteIcon(data.userId, data.audioEnabled)
+          })
+
+          const updateMuteIcon = (userId, audioEnabled) => {
+            const videoContainer = document.getElementById(`${userId}`)
             const muteIcon = videoContainer.querySelector("img")
             if (!muteIcon) return
 
-            if (data.audioEnabled) {
+            audioEnabled = !audioEnabled
+            if (audioEnabled) {
               muteIcon.classList.remove("hide")
               muteIcon.classList.add("show")
             } else {
               muteIcon.classList.remove("show")
               muteIcon.classList.add("hide")
             }
-          })
+          }
 
           socket.on("user-connected", async (userID) => {
             console.log("Connecting to: " + userID)
@@ -202,7 +214,7 @@ export default function Room() {
 
             let username = "LMS"
             let userId = ""
-            socket.on("userRecord", (data) => {
+            socket.on("user-record", (data) => {
               username = data.username
               userId = data.userId
 
@@ -212,38 +224,21 @@ export default function Room() {
               }
               setMembers((members) => [...members, doc])
             })
-
-            /*setPeers((prevConnections) => [
-              ...prevConnections,
-              { userID, call },
-            ])*/
             calls[userID] = call
             call.on("stream", (userVideoStream) => {
-              //console.log(calls)
               addVideoStream(userID, userVideoStream, username)
             })
           })
 
           socket.on("user-disconnected", (userID) => {
-            //console.log(calls)
             if (calls[userID]) calls[userID].close()
-
-            /*const disconnectedConnection = peers.find(
-              (connection) => connection.userID === userID
-            )
-            
-            console.log(disconnectedConnection)
-            if (disconnectedConnection) {
-              const { call } = disconnectedConnection
-              call.close()
-              setPeers((prevConnections) =>
-                prevConnections.filter(
-                  (connection) => connection.userID !== userID
-                )
-              )
-            }*/
-            //console.log(calls)
             removeVideoStream(userID)
+          })
+
+          socket.on("kicked", () => {
+            console.log("HEREEEEEEE")
+            leave()
+            toast.success("You've been removed by the instructor!")
           })
 
           socket.on("message", (msg) => {
@@ -268,7 +263,7 @@ export default function Room() {
             username: userRecord.username,
             userId: userRecord.userId,
           }
-          socket.emit("userRecord", call.peer, doc)
+          socket.emit("user-record", call.peer, doc)
 
           if (instructor === myId && boardStream) call.answer(boardStream)
           else call.answer(stream)
@@ -280,8 +275,10 @@ export default function Room() {
                 userId: call.metadata.userId,
                 username: call.metadata.username,
               }
-              setMembers((members) => [...members, doc])
+              setMembers([...members, doc])
               addVideoStream(call.peer, userVideoStream, call.metadata.username)
+
+              if (instructor === null) socket.emit("check-presentation")
             }
           })
         })
@@ -382,7 +379,8 @@ export default function Room() {
   }
 
   const toggleVideo = () => {
-    const videoElement = document.querySelector(`.${myId}`)
+    const videoContainer = document.getElementById(`${myId}`)
+    const videoElement = videoContainer.querySelector("video")
     if (videoElement) {
       const videoTrack = videoElement.srcObject.getVideoTracks()[0]
       if (videoTrack) videoTrack.enabled = !videoEnabled
@@ -391,31 +389,38 @@ export default function Room() {
   }
 
   const toggleAudio = () => {
-    const videoElement = document.querySelector(`.${myId}`)
-    const videoContainer = document.querySelector(`#${myId}`)
+    const videoContainer = document.getElementById(`${myId}`)
+    const videoElement = videoContainer.querySelector("video")
 
     const muteIcon = videoContainer.querySelector("img")
-    if (!muteIcon) return
+    if (muteIcon) {
+      if (audioEnabled) {
+        muteIcon.classList.remove("hide")
+        muteIcon.classList.add("show")
+      } else {
+        muteIcon.classList.remove("show")
+        muteIcon.classList.add("hide")
+      }
 
-    if (audioEnabled) {
-      muteIcon.classList.remove("hide")
-      muteIcon.classList.add("show")
-    } else {
-      muteIcon.classList.remove("show")
-      muteIcon.classList.add("hide")
+      const doc = {
+        userId: myId,
+        audioEnabled: audioEnabled,
+      }
+      socket.emit("mute-me", doc)
     }
-
-    const doc = {
-      userId: myId,
-      audioEnabled: audioEnabled,
-    }
-    socket.emit("mute-me", doc)
 
     if (videoElement) {
       const audioTrack = videoElement.srcObject.getAudioTracks()[0]
       if (audioTrack) audioTrack.enabled = !audioEnabled
       setAudioEnabled(!audioEnabled)
     }
+  }
+
+  const removeMember = (userId) => {
+    socket.emit("kick", userId)
+    setMembers((members) =>
+      members.filter((member) => member.userId !== userId)
+    )
   }
 
   const toggleRecord = () => {
@@ -450,19 +455,26 @@ export default function Room() {
   }
 
   const leave = () => {
-    const videoElement = document.querySelector(`.${myId}`)
-    if (videoElement) {
-      const tracks = videoElement.srcObject.getTracks()
-      tracks.forEach((track) => track.stop())
-    }
+    try {
+      const videoContainer = document.getElementById(`${myId}`)
+      const videoElement = videoContainer.querySelector("video")
 
-    if (myPeer !== null) myPeer.destroy()
-    if (socket) {
-      socket.off("connect")
-      socket.disconnect()
+      if (videoElement) {
+        const tracks = videoElement.srcObject.getTracks()
+        tracks.forEach((track) => track.stop())
+      }
+
+      instructor = null
+      if (myPeer !== null) myPeer.destroy()
+      if (socket) {
+        socket.off("connect")
+        socket.disconnect()
+      }
+      dispatch(toggleLogin())
+      navigate(`/lecture/${room}`)
+    } catch (e) {
+      console.log(e)
     }
-    dispatch(toggleLogin())
-    navigate(`/lecture/${room}`)
   }
 
   const leaveMeeting = () => {
@@ -490,7 +502,14 @@ export default function Room() {
         />
       )}
 
-      {kick && <Kick kick={kick} members={members} />}
+      {kick && (
+        <Kick
+          kick={kick}
+          socket={socket}
+          members={members}
+          kicked={(userId) => removeMember(userId)}
+        />
+      )}
 
       <div className="stream-container">
         <div

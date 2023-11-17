@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import "./modal.css"
 import { AiOutlineClose } from "react-icons/ai"
-import { toast } from "react-toastify"
 
-export default function Kick({ kick, members }) {
+export default function Kick({ kick, members, kicked }) {
   const [showKick, setShowKick] = useState(kick)
 
-  useEffect(() => {
-    console.log(members)
-  }, [])
+  const kickMember = (obj) => {
+    kicked(obj.userId)
+  }
 
   const toggleKick = () => {
     setShowKick(!showKick)
@@ -25,13 +24,23 @@ export default function Kick({ kick, members }) {
               <AiOutlineClose className="close-btn" onClick={toggleKick} />
             </div>
             <ul className="kick-members">
-              <li>
-                <div className="kick-item-user">
-                  <label className="kick-name">John Doe</label>
-                  <input className="kick-btn" type="button" value="Kick" />
-                </div>
-                <hr />
-              </li>
+              {members.length < 1 && (
+                <label className="no-members">No members</label>
+              )}
+              {members.map((obj, index) => (
+                <li key={index}>
+                  <div className="kick-item-user">
+                    <label className="kick-name">{obj.username}</label>
+                    <input
+                      className="kick-btn"
+                      type="button"
+                      value="Kick"
+                      onClick={() => kickMember(obj)}
+                    />
+                  </div>
+                  <hr />
+                </li>
+              ))}
             </ul>
           </div>
         </div>
