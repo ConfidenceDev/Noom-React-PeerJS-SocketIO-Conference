@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { toast } from "react-toastify"
 import StudentImg from "../../assets/student.png"
 import Logo from "../../assets/video.png"
 import "./login.css"
 import "../animations.css"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 import { toggleLogin, setMeetingAndUser } from "../../store"
 
 export default function Login() {
   const [emailId, setEmailId] = useState("")
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const loggedIn = useSelector((state) => state.value)
   const { room } = useParams()
   const [isDisabled, setIsDisabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
+    //fetch(`http://localhost:5000`)
     fetch(`https://noom-lms-server.onrender.com`)
       .then((response) => {
         console.log(response.status)
@@ -39,7 +39,7 @@ export default function Login() {
 
   function loadUser() {
     if (emailId === null || emailId === "")
-      return toast.error("Please enter your student id!")
+      return toast.error("Please enter your email id!")
 
     //spacemars666@gmail.com
     //decodeanalytical@gmail.com

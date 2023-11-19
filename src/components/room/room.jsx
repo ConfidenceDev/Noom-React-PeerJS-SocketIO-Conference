@@ -137,6 +137,11 @@ export default function Room() {
         })
 
       const initializePeer = (localStream) => {
+        /*const peer = new Peer(myId, {
+          host: "localhost",
+          port: 5000,
+          path: "/peerjs",
+        })*/
         const peer = new Peer(myId, {
           host: "noom-lms-server.onrender.com",
           port: 443,
@@ -232,13 +237,17 @@ export default function Room() {
 
           socket.on("user-disconnected", (userID) => {
             if (calls[userID]) calls[userID].close()
+            updateMembers(userID)
             removeVideoStream(userID)
           })
 
-          socket.on("kicked", () => {
-            console.log("HEREEEEEEE")
-            leave()
-            toast.success("You've been removed by the instructor!")
+          socket.on("kick", (id) => {
+            if (id === myId) {
+              leave()
+              toast.success("You've been removed by the instructor!")
+            } else {
+              updateMembers(id)
+            }
           })
 
           socket.on("message", (msg) => {
@@ -261,7 +270,7 @@ export default function Room() {
           }
           const doc = {
             username: userRecord.username,
-            userId: userRecord.userId,
+            userId: myId,
           }
           socket.emit("user-record", call.peer, doc)
 
@@ -312,6 +321,7 @@ export default function Room() {
 
   const handleResize = () => {
     setIsPhone(window.innerWidth < 1057)
+    setIsChatVisible(window.innerWidth < 1057 ? false : true)
   }
 
   const addBoardStream = (stream) => {
@@ -404,7 +414,7 @@ export default function Room() {
 
       const doc = {
         userId: myId,
-        audioEnabled: audioEnabled,
+        audioEnabled: !audioEnabled,
       }
       socket.emit("mute-me", doc)
     }
@@ -418,6 +428,10 @@ export default function Room() {
 
   const removeMember = (userId) => {
     socket.emit("kick", userId)
+    updateMembers(userId)
+  }
+
+  const updateMembers = (userId) => {
     setMembers((members) =>
       members.filter((member) => member.userId !== userId)
     )
