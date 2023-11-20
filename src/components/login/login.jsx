@@ -17,8 +17,8 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    //fetch(`http://localhost:5000`)
     fetch(`https://noom-lms-server.onrender.com`)
+      //fetch(`http://localhost:5000`)
       .then((response) => {
         console.log(response.status)
       })
@@ -90,7 +90,9 @@ export default function Login() {
       })
       .catch((error) => {
         console.log(error)
-        toast.error("You are not registered for this course!")
+        toast.error(
+          "Something went wrong: check if you are registered for this course!"
+        )
         setIsDisabled(false)
         setIsLoading(false)
       })

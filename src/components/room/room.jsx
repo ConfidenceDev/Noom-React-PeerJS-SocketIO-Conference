@@ -313,15 +313,12 @@ export default function Room() {
   }, [])
 
   const handleBeforeUnload = () => {
-    if (socket) {
-      socket.off("connect")
-      socket.disconnect()
-    }
+    exitCleanUp()
   }
 
   const handleResize = () => {
     setIsPhone(window.innerWidth < 1057)
-    setIsChatVisible(window.innerWidth < 1057 ? false : true)
+    //setIsChatVisible(window.innerWidth < 1057 ? false : true)
   }
 
   const addBoardStream = (stream) => {
@@ -468,7 +465,7 @@ export default function Room() {
     setIsParticipants(false)
   }
 
-  const leave = () => {
+  const exitCleanUp = () => {
     try {
       const videoContainer = document.getElementById(`${myId}`)
       const videoElement = videoContainer.querySelector("video")
@@ -484,11 +481,15 @@ export default function Room() {
         socket.off("connect")
         socket.disconnect()
       }
-      dispatch(toggleLogin())
-      navigate(`/lecture/${room}`)
     } catch (e) {
       console.log(e)
     }
+  }
+
+  const leave = () => {
+    exitCleanUp()
+    dispatch(toggleLogin())
+    navigate(`/lecture/${room}`)
   }
 
   const leaveMeeting = () => {

@@ -472,10 +472,22 @@
   .video-stream-container label {
     font-size: 12px;
   }
+
+  .bottom-container {
+    padding-left: 60%;
+  }
 }
 
 @media (max-width: 415px) {
+  .bottom-container > div:nth-child(2) {
+    margin-right: 8px;
+  }
+
+  .bottom-container > div:nth-last-child(2) {
+    margin-left: 8px;
+  }
+
   .bottom-container {
-    padding-left: 50%;
+    padding-left: 90%;
   }
 }
