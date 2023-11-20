@@ -112,6 +112,7 @@ export default function Room() {
 
   useEffect(() => {
     if (!loggedIn) return navigate(`/lecture/${room}`)
+    handleResize()
 
     socket = io(ENDPOINT)
     socket.on("connect", () => {
@@ -301,7 +302,6 @@ export default function Room() {
       }
     })
 
-    handleResize()
     window.addEventListener("resize", handleResize)
     window.addEventListener("beforeunload", handleBeforeUnload)
     return () => {
@@ -318,7 +318,7 @@ export default function Room() {
 
   const handleResize = () => {
     setIsPhone(window.innerWidth < 1057)
-    //setIsChatVisible(window.innerWidth < 1057 ? false : true)
+    setIsChatVisible(window.innerWidth < 1057 ? false : true)
   }
 
   const addBoardStream = (stream) => {
