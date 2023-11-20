@@ -44,7 +44,7 @@ export default function Room() {
   const [videoEnabled, setVideoEnabled] = useState(true)
   const [audioEnabled, setAudioEnabled] = useState(true)
   const [muteAllEnabled, setMuteAllEnabled] = useState(false)
-  const [isChatVisible, setIsChatVisible] = useState(true)
+  const [isChatVisible, setIsChatVisible] = useState(false)
   const [isParticipants, setIsParticipants] = useState(false)
   const [meetingDetails, setMeetingDetails] = useState(false)
   const [isBoard, setIsBoard] = useState(false)
@@ -318,7 +318,7 @@ export default function Room() {
 
   const handleResize = () => {
     setIsPhone(window.innerWidth < 1057)
-    setIsChatVisible(window.innerWidth < 1057 ? false : true)
+    setIsChatVisible(window.innerWidth > 1057 ? true : false)
   }
 
   const addBoardStream = (stream) => {
