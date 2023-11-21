@@ -320,7 +320,6 @@ export default function Room() {
 
   const handleResize = () => {
     setIsPhone(window.innerWidth < 1057)
-    //setIsChatVisible(window.innerWidth > 1057 ? true : false)
   }
 
   const addBoardStream = (stream) => {
@@ -673,10 +672,10 @@ export default function Room() {
             </div>
           )}
           {/* ========== Admin function =============*/}
-          <div className="nav-btn">
+          {/* <div className="nav-btn">
             <HiHandRaised className="nav-icon" />
             <label>Raise Hand</label>
-          </div>
+          </div> */}
           <div className="nav-btn" onClick={toggleParticipants}>
             <div className="mem-cover">
               <label className="mem-count">{membersCount}</label>
