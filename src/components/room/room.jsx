@@ -338,7 +338,7 @@ export default function Room() {
     videoElement.srcObject = stream
     videoElement.id = userID
     videoElement.className = userID
-    //videoElement.muted = true
+    videoElement.muted = false
     videoElement.classList.add("video-stream")
     videoElement.setAttribute("autoplay", "")
     videoElement.setAttribute("playsinline", "")
