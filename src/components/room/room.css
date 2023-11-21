@@ -480,14 +480,14 @@
 
 @media (max-width: 415px) {
   .bottom-container > div:nth-child(2) {
-    margin-right: 8px;
+    margin-right: 24px;
   }
 
   .bottom-container > div:nth-last-child(2) {
-    margin-left: 8px;
+    margin-left: 24px;
   }
 
   .bottom-container {
-    padding-left: 90%;
+    padding-left: 80%;
   }
 }
