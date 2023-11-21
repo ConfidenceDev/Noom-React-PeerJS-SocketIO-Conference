@@ -44,7 +44,9 @@ export default function Room() {
   const [videoEnabled, setVideoEnabled] = useState(true)
   const [audioEnabled, setAudioEnabled] = useState(true)
   const [muteAllEnabled, setMuteAllEnabled] = useState(false)
-  const [isChatVisible, setIsChatVisible] = useState(false)
+  const [isChatVisible, setIsChatVisible] = useState(
+    window.innerWidth > 1057 ? true : false
+  )
   const [isParticipants, setIsParticipants] = useState(false)
   const [meetingDetails, setMeetingDetails] = useState(false)
   const [isBoard, setIsBoard] = useState(false)
@@ -318,7 +320,7 @@ export default function Room() {
 
   const handleResize = () => {
     setIsPhone(window.innerWidth < 1057)
-    setIsChatVisible(window.innerWidth > 1057 ? true : false)
+    //setIsChatVisible(window.innerWidth > 1057 ? true : false)
   }
 
   const addBoardStream = (stream) => {
@@ -337,6 +339,7 @@ export default function Room() {
     videoElement.srcObject = stream
     videoElement.id = userID
     videoElement.className = userID
+    videoElement.muted = true
     videoElement.classList.add("video-stream")
     videoElement.setAttribute("autoplay", "")
     videoElement.setAttribute("playsinline", "")
