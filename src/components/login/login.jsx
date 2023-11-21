@@ -41,6 +41,9 @@ export default function Login() {
     if (emailId === null || emailId === "")
       return toast.error("Please enter your email id!")
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(emailId)) return toast.error("Enter a valid email!")
+
     //spacemars666@gmail.com
     //decodeanalytical@gmail.com
     //ebisedi@yahoo.com || lms198
