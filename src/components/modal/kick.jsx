@@ -28,7 +28,7 @@ export default function Kick({ kick, members, kicked }) {
                 <label className="no-members">No members</label>
               )}
               {members.map((obj, index) => (
-                <li key={index}>
+                <li key={obj.userId}>
                   <div className="kick-item-user">
                     <label className="kick-name">{obj.username}</label>
                     <input

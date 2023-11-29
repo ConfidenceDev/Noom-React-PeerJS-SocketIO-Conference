@@ -38,6 +38,7 @@ let socket = null
 let myId
 let boardStream = null
 let instructor = null
+let members = []
 const calls = {}
 
 export default function Room() {
@@ -57,7 +58,6 @@ export default function Room() {
   const { room } = useParams()
   const navigate = useNavigate()
   const [membersCount, setMembersCount] = useState("")
-  const [members, setMembers] = useState([])
   const loggedIn = useSelector((state) => state.loggedIn)
   const meetingRecord = useSelector((state) => state.meeting)
   const userRecord = useSelector((state) => state.user)
@@ -66,7 +66,6 @@ export default function Room() {
   const [messages, setMessages] = useState([])
   const [isPhone, setIsPhone] = useState(false)
   const [myPeer, setMyPeer] = useState(null)
-  const [peers, setPeers] = useState([])
   const videoGridRef = useRef()
   const presentationRef = useRef()
   const ulRef = useRef()
@@ -120,9 +119,6 @@ export default function Room() {
     socket.on("connect", () => {
       myId = socket.id
       socket.emit("join-room", room, myId)
-
-      //console.log(myId)
-      //console.log(meetingRecord.instructorId, userRecord.userId)
       if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true)
 
       socket.on("nom", (data) => {
@@ -156,7 +152,6 @@ export default function Room() {
 
       const loadPeerListeners = (peer, stream) => {
         peer.on("open", (id) => {
-          //console.log("MY ID: " + id)
           setMyPeer(peer)
           socket.on("mute-all", (value) => {
             const videoElement = document.querySelector(`.${myId}`)
@@ -230,7 +225,8 @@ export default function Room() {
                 userId: userId,
                 username: username,
               }
-              setMembers((members) => [...members, doc])
+              members = [...members, doc]
+              toast.success(`${username} joined the meeting`)
             })
             calls[userID] = call
             call.on("stream", (userVideoStream) => {
@@ -240,6 +236,8 @@ export default function Room() {
 
           socket.on("user-disconnected", (userID) => {
             if (calls[userID]) calls[userID].close()
+            const member = members.find((member) => member.userId === userID)
+            if (member) toast.error(`${member.username} left the meeting`)
             updateMembers(userID)
             removeVideoStream(userID)
           })
@@ -247,15 +245,17 @@ export default function Room() {
           socket.on("kick", (id) => {
             if (id === myId) {
               leave()
-              toast.success("You've been removed by the instructor!")
+              toast.success("You've been removed by the instructor")
             } else {
+              console.log("Here: " + id)
+              const member = members.find((member) => member.userId === id)
+              if (member) toast.error(`${member.username} has been removed`)
               updateMembers(id)
             }
           })
 
           socket.on("message", (msg) => {
             if (msg.userId === myId) msg.username = "You"
-            //else msg.username = msg.username.substring(0, 6)
             setMessages((prevMessages) => [...prevMessages, msg])
             if (ulRef.current)
               ulRef.current.scrollTop = ulRef.current.scrollHeight
@@ -268,7 +268,7 @@ export default function Room() {
             userRecord.userId === call.metadata.userId
           ) {
             leave()
-            toast.success("A User with this ID already exists!")
+            toast.success("A User with this ID already exists")
             return
           }
           const doc = {
@@ -287,7 +287,7 @@ export default function Room() {
                 userId: call.metadata.userId,
                 username: call.metadata.username,
               }
-              setMembers([...members, doc])
+              members = [...members, doc]
               addVideoStream(call.peer, userVideoStream, call.metadata.username)
 
               if (instructor === null) socket.emit("check-presentation")
@@ -431,9 +431,10 @@ export default function Room() {
   }
 
   const updateMembers = (userId) => {
-    setMembers((members) =>
+    /*setMembers((members) =>
       members.filter((member) => member.userId !== userId)
-    )
+    )*/
+    members = members.filter((member) => member.userId !== userId)
   }
 
   const toggleRecord = () => {
@@ -496,7 +497,7 @@ export default function Room() {
 
   const leaveMeeting = () => {
     leave()
-    toast.success("You left the meeting!")
+    toast.success("You left the meeting")
   }
 
   return (
