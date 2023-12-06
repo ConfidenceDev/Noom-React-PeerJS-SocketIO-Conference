@@ -378,6 +378,8 @@ export default function Room() {
   }
 
   const handleSendMessage = () => {
+    if (message === "" || message === null) return
+
     const obj = {
       msg: message,
       username: userRecord.username,
