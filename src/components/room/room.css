@@ -69,12 +69,28 @@
   opacity: 0.6;
 }
 
+.video-hide-div {
+  width: 100%;
+  height: 100%;
+  background-color: var(--secondary-grey);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-hide-img {
+  border-radius: 50%;
+  width: 50%;
+  height: 50%;
+}
+
 .hide {
   display: none;
 }
 
 .show {
-  display: block;
+  display: flex;
 }
 
 .hide-board {
@@ -109,7 +125,7 @@
   height: 300px;
   box-shadow: 0 2px 30px var(--box);
   border-radius: 8px;
-  display: block;
+  display: flex;
   position: relative;
   justify-self: center;
 }
@@ -122,7 +138,7 @@
   object-fit: cover;
 }
 
-.video-stream-container img {
+.video-stream-container .video-mute-icon {
   position: absolute;
   width: 28px;
   height: 28px;
@@ -465,8 +481,8 @@
   }
 
   .video-stream-container {
-    width: 250px;
-    height: 250px;
+    width: 200px;
+    height: 200px;
   }
 
   .video-stream-container label {

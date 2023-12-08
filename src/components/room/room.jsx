@@ -21,7 +21,7 @@ import { GrSend } from "react-icons/gr"
 import { AiOutlineClose } from "react-icons/ai"
 import UserImg from "../../assets/user1.png"
 import MuteImg from "../../assets/mute.png"
-import Peer from "peerjs"
+//import Peer from "peerjs"
 import { v4 as uuidv4 } from "uuid"
 import Modal from "../modal/modal"
 import Kick from "../modal/kick"
@@ -40,6 +40,7 @@ let boardStream = null
 let instructor = null
 let members = []
 const calls = {}
+let uniqueId = uuidv4()
 
 export default function Room() {
   const [videoEnabled, setVideoEnabled] = useState(true)
@@ -48,13 +49,13 @@ export default function Room() {
   const [isChatVisible, setIsChatVisible] = useState(
     window.innerWidth > 1057 ? true : false
   )
-  const [isParticipants, setIsParticipants] = useState(false)
   const [meetingDetails, setMeetingDetails] = useState(false)
   const [isBoard, setIsBoard] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [isDisplay, setIsDisplay] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [kick, setKick] = useState(false)
+  const [isParticipants, setIsParticaipants] = useState(false)
   const { room } = useParams()
   const navigate = useNavigate()
   const [membersCount, setMembersCount] = useState("")
@@ -70,7 +71,6 @@ export default function Room() {
   const presentationRef = useRef()
   const ulRef = useRef()
 
-  let uniqueId = uuidv4()
   const nav =
     navigator.mediaDevices.getUserMedia ||
     navigator.mediaDevices.webkitGetUserMedia ||
@@ -114,6 +114,13 @@ export default function Room() {
   useEffect(() => {
     if (!loggedIn) return navigate(`/lecture/${room}`)
     handleResize()
+
+    /*const recordId = userRecord.userId
+    socket = io(ENDPOINT, {
+      query: {
+        recordId,
+      },
+    })*/
 
     socket = io(ENDPOINT)
     socket.on("connect", () => {
@@ -211,7 +218,7 @@ export default function Room() {
             const call = await peer.call(userID, stream, {
               metadata: {
                 username: userRecord.username,
-                userId: userRecord.userId,
+                userId: myId,
               },
             })
 
@@ -242,15 +249,14 @@ export default function Room() {
             removeVideoStream(userID)
           })
 
-          socket.on("kick", (id) => {
-            if (id === myId) {
+          socket.on("kick", (userId) => {
+            if (userId === myId) {
               leave()
               toast.success("You've been removed by the instructor")
             } else {
-              console.log("Here: " + id)
-              const member = members.find((member) => member.userId === id)
+              const member = members.find((member) => member.userId === userId)
               if (member) toast.error(`${member.username} has been removed`)
-              updateMembers(id)
+              updateMembers(userId)
             }
           })
 
@@ -263,10 +269,7 @@ export default function Room() {
         })
 
         peer.on("call", (call) => {
-          if (
-            call.metadata !== undefined &&
-            userRecord.userId === call.metadata.userId
-          ) {
+          if (call.metadata !== undefined && myId === call.metadata.userId) {
             leave()
             toast.success("A User with this ID already exists")
             return
@@ -346,6 +349,14 @@ export default function Room() {
       videoElement.play()
     })
 
+    /*const imgHideVid = document.createElement("img")
+    imgHideVid.className = "video-hide-img"
+    imgHideVid.setAttribute("src", UserImg)*/
+
+    /*const divHideVid = document.createElement("div")
+    divHideVid.className = "video-hide-div"
+    divHideVid.appendChild(imgHideVid)*/
+
     const muteIcon = document.createElement("img")
     muteIcon.setAttribute("src", MuteImg)
     muteIcon.className = "video-mute-icon hide"
@@ -358,13 +369,14 @@ export default function Room() {
     videoContainer.className = "video-stream-container"
     videoContainer.appendChild(videoElement)
     videoContainer.appendChild(label)
+    //videoContainer.appendChild(imgHideVid)
     videoContainer.appendChild(muteIcon)
 
     if (videoGridRef.current) videoGridRef.current.append(videoContainer)
   }
 
   const removeVideoStream = (userID) => {
-    const existingVideoElement = document.getElementById(userID)
+    const existingVideoElement = document.getElementById(`${userID}`)
     if (existingVideoElement) {
       existingVideoElement.srcObject = null
       existingVideoElement.remove()
@@ -391,35 +403,34 @@ export default function Room() {
 
   const toggleVideo = () => {
     const videoContainer = document.getElementById(`${myId}`)
+    if (!videoContainer) return
     const videoElement = videoContainer.querySelector("video")
-    if (videoElement) {
-      const videoTrack = videoElement.srcObject.getVideoTracks()[0]
-      if (videoTrack) videoTrack.enabled = !videoEnabled
-      setVideoEnabled(!videoEnabled)
-    }
+    if (!videoElement) return
+    const videoTrack = videoElement.srcObject.getVideoTracks()[0]
+    if (videoTrack) videoTrack.enabled = !videoEnabled
+    setVideoEnabled(!videoEnabled)
   }
 
   const toggleAudio = () => {
     const videoContainer = document.getElementById(`${myId}`)
+    if (!videoContainer) return
     const videoElement = videoContainer.querySelector("video")
 
     const muteIcon = videoContainer.querySelector("img")
-    if (muteIcon) {
-      if (audioEnabled) {
-        muteIcon.classList.remove("hide")
-        muteIcon.classList.add("show")
-      } else {
-        muteIcon.classList.remove("show")
-        muteIcon.classList.add("hide")
-      }
-
-      const doc = {
-        userId: myId,
-        audioEnabled: !audioEnabled,
-      }
-      socket.emit("mute-me", doc)
+    if (!muteIcon) return
+    if (audioEnabled) {
+      muteIcon.classList.remove("hide")
+      muteIcon.classList.add("show")
+    } else {
+      muteIcon.classList.remove("show")
+      muteIcon.classList.add("hide")
     }
 
+    const doc = {
+      userId: myId,
+      audioEnabled: !audioEnabled,
+    }
+    socket.emit("mute-me", doc)
     if (videoElement) {
       const audioTrack = videoElement.srcObject.getAudioTracks()[0]
       if (audioTrack) audioTrack.enabled = !audioEnabled
@@ -461,13 +472,13 @@ export default function Room() {
   }
 
   const toggleParticipants = () => {
-    setIsParticipants(!isParticipants)
+    setIsParticaipants(!isParticipants)
     setMeetingDetails(false)
   }
 
   const toggleMeetingDetails = () => {
     setMeetingDetails(!meetingDetails)
-    setIsParticipants(false)
+    setIsParticaipants(false)
   }
 
   const exitCleanUp = () => {

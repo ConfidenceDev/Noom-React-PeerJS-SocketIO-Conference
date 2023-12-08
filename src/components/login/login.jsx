@@ -47,6 +47,7 @@ export default function Login() {
     //spacemars666@gmail.com
     //decodeanalytical@gmail.com
     //ebisedi@yahoo.com || lms198
+    //masac44960@undewp.com || lms470
     setIsLoading(true)
     setIsDisabled(true)
     const options = {
