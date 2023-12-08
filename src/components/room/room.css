@@ -476,13 +476,11 @@
     width: 93%;
   }
 
-  .stream-grid {
-    gap: 4px;
-  }
-
   .video-stream-container {
     width: 200px;
     height: 200px;
+    justify-self: center;
+    align-self: center;
   }
 
   .video-stream-container label {
