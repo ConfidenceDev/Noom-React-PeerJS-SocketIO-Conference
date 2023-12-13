@@ -135,7 +135,7 @@ export default function Room() {
       nav(getUserMediaOptions)
         .then((stream) => {
           initializePeer(stream)
-          addVideoStream(myId, stream, "You")
+          addVideoStream(myId, stream, "You", userRecord.img)
         })
         .catch((error) => {
           toast.error("Error accessing media:", error)
@@ -200,7 +200,8 @@ export default function Room() {
 
           const updateMuteIcon = (userId, audioEnabled) => {
             const videoContainer = document.getElementById(`${userId}`)
-            const muteIcon = videoContainer.querySelector("img")
+            if (!videoContainer) return
+            const muteIcon = videoContainer.querySelector(".video-mute-icon")
             if (!muteIcon) return
 
             audioEnabled = !audioEnabled
@@ -213,31 +214,62 @@ export default function Room() {
             }
           }
 
+          socket.on("hide-me", (data) => {
+            updateHideImg(data.userId, data.videoEnabled)
+          })
+
+          const updateHideImg = (userId, videoEnabled) => {
+            const videoContainer = document.getElementById(`${userId}`)
+            if (!videoContainer) return
+            const videoElement = videoContainer.querySelector("video")
+            if (!videoElement) return
+
+            const hideVid = videoContainer.querySelector(".video-hide-img")
+            if (!hideVid) return
+
+            videoEnabled = !videoEnabled
+            if (videoEnabled) {
+              hideVid.classList.remove("hide")
+              hideVid.classList.add("show")
+              videoElement.classList.add("hide")
+              videoElement.classList.remove("show")
+            } else {
+              hideVid.classList.remove("show")
+              hideVid.classList.add("hide")
+              videoElement.classList.add("show")
+              videoElement.classList.remove("hide")
+            }
+          }
+
           socket.on("user-connected", async (userID) => {
             console.log("Connecting to: " + userID)
             const call = await peer.call(userID, stream, {
               metadata: {
                 username: userRecord.username,
                 userId: myId,
+                img: userRecord.img,
               },
             })
 
             let username = "LMS"
             let userId = ""
+            let img = []
             socket.on("user-record", (data) => {
               username = data.username
               userId = data.userId
+              img = data.img
 
               const doc = {
                 userId: userId,
                 username: username,
+                img: img,
               }
               members = [...members, doc]
               toast.success(`${username} joined the meeting`)
             })
             calls[userID] = call
             call.on("stream", (userVideoStream) => {
-              addVideoStream(userID, userVideoStream, username)
+              addVideoStream(userID, userVideoStream, username, img)
             })
           })
 
@@ -277,6 +309,7 @@ export default function Room() {
           const doc = {
             username: userRecord.username,
             userId: myId,
+            img: userRecord.img,
           }
           socket.emit("user-record", call.peer, doc)
 
@@ -289,9 +322,15 @@ export default function Room() {
               const doc = {
                 userId: call.metadata.userId,
                 username: call.metadata.username,
+                img: call.metadata.img,
               }
               members = [...members, doc]
-              addVideoStream(call.peer, userVideoStream, call.metadata.username)
+              addVideoStream(
+                call.peer,
+                userVideoStream,
+                call.metadata.username,
+                call.metadata.img
+              )
 
               if (instructor === null) socket.emit("check-presentation")
             }
@@ -335,7 +374,7 @@ export default function Room() {
     if (presentationRef.current) presentationRef.current.srcObject = null
   }
 
-  const addVideoStream = (userID, stream, username) => {
+  const addVideoStream = (userID, stream, username, img) => {
     removeVideoStream(userID)
     const videoElement = document.createElement("video")
     videoElement.srcObject = stream
@@ -349,13 +388,9 @@ export default function Room() {
       videoElement.play()
     })
 
-    /*const imgHideVid = document.createElement("img")
+    const imgHideVid = document.createElement("img")
     imgHideVid.className = "video-hide-img"
-    imgHideVid.setAttribute("src", UserImg)*/
-
-    /*const divHideVid = document.createElement("div")
-    divHideVid.className = "video-hide-div"
-    divHideVid.appendChild(imgHideVid)*/
+    imgHideVid.setAttribute("src", img.length > 0 ? img[0].path : UserImg)
 
     const muteIcon = document.createElement("img")
     muteIcon.setAttribute("src", MuteImg)
@@ -369,8 +404,8 @@ export default function Room() {
     videoContainer.className = "video-stream-container"
     videoContainer.appendChild(videoElement)
     videoContainer.appendChild(label)
-    //videoContainer.appendChild(imgHideVid)
     videoContainer.appendChild(muteIcon)
+    videoContainer.appendChild(imgHideVid)
 
     if (videoGridRef.current) videoGridRef.current.append(videoContainer)
   }
@@ -406,6 +441,26 @@ export default function Room() {
     if (!videoContainer) return
     const videoElement = videoContainer.querySelector("video")
     if (!videoElement) return
+
+    const hideVid = videoContainer.querySelector(".video-hide-img")
+    if (!hideVid) return
+    if (videoEnabled) {
+      hideVid.classList.remove("hide")
+      hideVid.classList.add("show")
+      videoElement.classList.add("hide")
+      videoElement.classList.remove("show")
+    } else {
+      hideVid.classList.remove("show")
+      hideVid.classList.add("hide")
+      videoElement.classList.add("show")
+      videoElement.classList.remove("hide")
+    }
+
+    const doc = {
+      userId: myId,
+      videoEnabled: !videoEnabled,
+    }
+    socket.emit("hide-me", doc)
     const videoTrack = videoElement.srcObject.getVideoTracks()[0]
     if (videoTrack) videoTrack.enabled = !videoEnabled
     setVideoEnabled(!videoEnabled)
@@ -416,7 +471,7 @@ export default function Room() {
     if (!videoContainer) return
     const videoElement = videoContainer.querySelector("video")
 
-    const muteIcon = videoContainer.querySelector("img")
+    const muteIcon = videoContainer.querySelector(".video-mute-icon")
     if (!muteIcon) return
     if (audioEnabled) {
       muteIcon.classList.remove("hide")
