@@ -35,7 +35,8 @@ import "../animations.css"
 const ENDPOINT = "https://noom-lms-server.onrender.com"
 //const ENDPOINT = "http://localhost:5000"
 let socket = null
-let myId
+let myId = null
+let prevId = null
 let boardStream = null
 let instructor = null
 let members = []
@@ -124,6 +125,7 @@ export default function Room() {
 
     socket = io(ENDPOINT)
     socket.on("connect", () => {
+      if (myId !== null && myId !== prevId) prevId = myId
       myId = socket.id
       socket.emit("join-room", room, myId)
       if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true)
@@ -411,11 +413,18 @@ export default function Room() {
   }
 
   const removeVideoStream = (userID) => {
-    const existingVideoElement = document.getElementById(`${userID}`)
-    if (existingVideoElement) {
-      existingVideoElement.srcObject = null
-      existingVideoElement.remove()
-    }
+    if (userID === myId && prevId !== null) removeVideoStreamEl(prevId)
+    removeVideoStreamEl(userID)
+  }
+
+  const removeVideoStreamEl = (userID) => {
+    const videoContainer = document.getElementById(`${userID}`)
+    if (!videoContainer) return
+    const videoElement = videoContainer.querySelector("video")
+    if (!videoElement) return
+
+    videoElement.srcObject = null
+    videoContainer.remove()
   }
 
   const handleKeyDown = (event) => {
