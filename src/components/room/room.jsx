@@ -155,6 +155,17 @@ export default function Room() {
           port: 443,
           path: "/peerjs",
           secure: true,
+          config: {
+            iceServers: [
+              { urls: "stun:stun.l.google.com:19302" },
+              { urls: "stun:freeturn.net:5349" },
+              {
+                urls: "turns:freeturn.tel:5349",
+                username: "free",
+                credential: "free",
+              },
+            ],
+          },
         })
         loadPeerListeners(peer, localStream)
       }
