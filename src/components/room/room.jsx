@@ -32,7 +32,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { toggleLogin } from "../../store"
 import "../animations.css"
 
-const ENDPOINT = "https://noom-lms-server.onrender.com"
+const ENDPOINT = "https://peerserver-two.vercel.app"
+//const ENDPOINT = "https://noom-lms-server.onrender.com"
 //const ENDPOINT = "http://localhost:5000"
 let socket = null
 let myId = null
@@ -151,7 +152,7 @@ export default function Room() {
           path: "/peerjs",
         })*/
         const peer = new Peer(myId, {
-          host: "noom-lms-server.onrender.com",
+          host: "https://peerserver-two.vercel.app",
           port: 443,
           path: "/peerjs",
           secure: true,
