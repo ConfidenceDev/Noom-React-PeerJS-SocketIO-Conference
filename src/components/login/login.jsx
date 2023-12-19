@@ -16,8 +16,8 @@ export default function Login() {
   const [isDisabled, setIsDisabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  /*useEffect(() => {
-    fetch(`https://peerserver-two.vercel.app`)
+  useEffect(() => {
+    fetch(`https://noom-lms-server.onrender.com`)
       //fetch(`http://localhost:5000`)
       .then((response) => {
         console.log(response.status)
@@ -25,7 +25,7 @@ export default function Login() {
       .catch((error) => {
         console.log(error)
       })
-  }, [])*/
+  }, [])
 
   const loadRoom = () => {
     loadUser()
