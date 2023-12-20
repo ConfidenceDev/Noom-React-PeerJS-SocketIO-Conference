@@ -152,7 +152,7 @@ export default function Room() {
           path: "/peerjs",
         })*/
         const peer = new Peer(myId, {
-          host: "https://noom-lms-server.onrender.com",
+          host: "noom-lms-server.onrender.com",
           port: 443,
           path: "/peerjs",
           secure: true,
