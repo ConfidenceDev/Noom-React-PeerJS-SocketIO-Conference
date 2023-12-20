@@ -158,12 +158,28 @@ export default function Room() {
           secure: true,
           config: {
             iceServers: [
-              { urls: "stun:stun.l.google.com:19302" },
-              { urls: "stun:freeturn.net:5349" },
               {
-                urls: "turns:freeturn.tel:5349",
-                username: "free",
-                credential: "free",
+                urls: "stun:stun.relay.metered.ca:80",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:80",
+                username: "56b865f82a19c4a150a943c5",
+                credential: "j0cWU2EINGzAaesG",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:80?transport=tcp",
+                username: "56b865f82a19c4a150a943c5",
+                credential: "j0cWU2EINGzAaesG",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:443",
+                username: "56b865f82a19c4a150a943c5",
+                credential: "j0cWU2EINGzAaesG",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:443?transport=tcp",
+                username: "56b865f82a19c4a150a943c5",
+                credential: "j0cWU2EINGzAaesG",
               },
             ],
           },
