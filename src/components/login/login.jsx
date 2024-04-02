@@ -62,7 +62,8 @@ export default function Login() {
       }),
     }
     fetch(
-      `https://server-eight-beige.vercel.app/api/admin/joinmeeting/${room}`,
+      //`https://server-eight-beige.vercel.app/api/admin/joinmeeting/${room}`,
+      `https://decode-mnjh.onrender.com/api/admin/joinmeeting/${room}`,
       options
     )
       .then((response) => response.json())

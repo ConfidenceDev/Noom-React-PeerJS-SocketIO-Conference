@@ -1,0 +1,32 @@
+{
+  "message": "Meeting created successfully",
+  "meeting": {
+    "instructor": "Kunle sayDayo",
+    "date": "23/12/2023",
+    "time": "1:30pm",
+    "description": "NginX",
+    "courseId": "660c0dc8c5094a8a981eaf46",
+    "courseName": "NginX",
+    "instructorId": "64b56ef351e834c56b8e8509",
+    "roomId": "lms983",
+    "email": "ebisedi@yahoo.com",
+    "isPaid": "free",
+    "amount": 0,
+    "course_image": [
+      {
+        "fieldname": "course_image",
+        "originalname": "nginx.png",
+        "encoding": "7bit",
+        "mimetype": "image/png",
+        "path": "https://res.cloudinary.com/decode-analytical/image/upload/v1712065991/profile/ucrmauzpvleuu45tbqzv.png",
+        "size": 1982,
+        "filename": "profile/ucrmauzpvleuu45tbqzv"
+      }
+    ],
+    "userId": "64b56ef351e834c56b8e8509",
+    "_id": "660c202dbe8c7fe8cf16faea",
+    "createdAt": "2024-04-02T15:11:41.393Z",
+    "updatedAt": "2024-04-02T15:11:41.393Z",
+    "__v": 0
+  }
+}
