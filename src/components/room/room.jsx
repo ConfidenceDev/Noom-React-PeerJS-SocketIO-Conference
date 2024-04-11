@@ -127,22 +127,27 @@ export default function Room() {
         setMembersCount(data.toString())
       })
 
-      const nav =
-        navigator.mediaDevices.getUserMedia ||
-        navigator.mediaDevices.webkitGetUserMedia ||
-        navigator.mediaDevices.mozGetUserMedia ||
-        navigator.mediaDevices.msGetUserMedia
+      const loadStream = async () => {
+        try {
+          const mediaOptions = {
+            video: true,
+            audio: true,
+          }
+          const stream =
+            (await navigator.mediaDevices.getUserMedia(mediaOptions)) ||
+            (await navigator.mediaDevices.webkitGetUserMedia(mediaOptions)) ||
+            (await navigator.mediaDevices.mozGetUserMedia(mediaOptions)) ||
+            (await navigator.mediaDevices.msGetUserMedia(mediaOptions))
 
-      nav({ video: true, audio: true })
-        .then((stream) => {
           initializePeer(stream)
           addVideoStream(myId, stream, "You", userRecord.img)
-        })
-        .catch((error) => {
+        } catch (error) {
           toast.error("Error accessing media:", error)
           console.error("Error accessing media:", error)
-        })
+        }
+      }
 
+      loadStream()
       const initializePeer = (localStream) => {
         /*const peer = new Peer(myId, {
           host: "localhost",
