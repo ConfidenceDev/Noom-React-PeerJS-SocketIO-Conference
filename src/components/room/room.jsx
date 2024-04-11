@@ -73,14 +73,6 @@ export default function Room() {
   const presentationRef = useRef()
   const ulRef = useRef()
 
-  const nav =
-    navigator.mediaDevices.getUserMedia ||
-    navigator.mediaDevices.webkitGetUserMedia ||
-    navigator.mediaDevices.mozGetUserMedia ||
-    navigator.mediaDevices.msGetUserMedia
-  const getUserMediaOptions = { video: true, audio: true }
-  const getUserScreenOptions = { cursor: true, audio: true }
-
   const startBoard = () => {
     if (!socket) return
 
@@ -91,7 +83,7 @@ export default function Room() {
 
     setIsBoard(true)
     navigator.mediaDevices
-      .getDisplayMedia(getUserScreenOptions)
+      .getDisplayMedia({ cursor: true, audio: true })
       .then((stream) => {
         instructor = myId
         setIsDisplay(true)
@@ -135,7 +127,13 @@ export default function Room() {
         setMembersCount(data.toString())
       })
 
-      nav(getUserMediaOptions)
+      const nav =
+        navigator.mediaDevices.getUserMedia ||
+        navigator.mediaDevices.webkitGetUserMedia ||
+        navigator.mediaDevices.mozGetUserMedia ||
+        navigator.mediaDevices.msGetUserMedia
+
+      nav({ video: true, audio: true })
         .then((stream) => {
           initializePeer(stream)
           addVideoStream(myId, stream, "You", userRecord.img)
