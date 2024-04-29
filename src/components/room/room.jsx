@@ -42,6 +42,7 @@ let boardStream = null
 let instructor = null
 let members = []
 const calls = {}
+let chatAlert = false
 let uniqueId = uuidv4()
 
 export default function Room() {
@@ -328,7 +329,7 @@ export default function Room() {
           socket.on("message", (msg) => {
             if (msg.userId === myId) msg.username = "You"
             setMessages((prevMessages) => [...prevMessages, msg])
-            if (msg.userId !== myId) {
+            if (msg.userId !== myId && chatAlert) {
               const content = `${msg.username}: ${
                 msg.msg.length > 10 ? `${msg.msg.substring(0, 10)}...` : msg.msg
               }`
@@ -400,6 +401,7 @@ export default function Room() {
   }
 
   const handleResize = () => {
+    if (window.innerWidth < 1057) chatAlert = true
     setIsPhone(window.innerWidth < 1057)
   }
 
@@ -565,6 +567,7 @@ export default function Room() {
   }
 
   const toggleChat = () => {
+    chatAlert = !chatAlert
     setIsChatVisible(!isChatVisible)
   }
 

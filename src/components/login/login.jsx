@@ -122,6 +122,7 @@ export default function Login() {
                 type="text"
                 value={emailId}
                 placeholder="Email ID"
+                autoComplete="on"
                 onChange={(e) => setEmailId(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
