@@ -328,6 +328,12 @@ export default function Room() {
           socket.on("message", (msg) => {
             if (msg.userId === myId) msg.username = "You"
             setMessages((prevMessages) => [...prevMessages, msg])
+            if (msg.userId !== myId) {
+              const content = `${msg.username}: ${
+                msg.msg.length > 10 ? `${msg.msg.substring(0, 10)}...` : msg.msg
+              }`
+              toast.success(content)
+            }
             if (ulRef.current)
               ulRef.current.scrollTop = ulRef.current.scrollHeight
           })
