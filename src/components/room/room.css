@@ -355,6 +355,8 @@
 
 .nav-btn label {
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .nav-icon {
@@ -491,7 +493,30 @@
 }
 
 @media (max-width: 415px) {
+  .bottom-nav {
+    height: 10vh;
+  }
+
   .bottom-container {
     padding-left: 30%;
+  }
+
+  .nav-btn {
+    font-size: 6px;
+  }
+
+  .nav-icon,
+  .mem-cover,
+  .nav-leave-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .nav-icon {
+    padding: 6px;
+  }
+
+  .mem-cover label {
+    font-size: 0.3em;
   }
 }
