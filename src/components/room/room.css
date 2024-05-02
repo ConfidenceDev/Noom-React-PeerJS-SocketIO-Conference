@@ -494,11 +494,11 @@
 
 @media (max-width: 415px) {
   .stream-container {
-    height: 85vh;
+    height: 82vh;
   }
 
   .bottom-nav {
-    height: 15vh;
+    height: 18vh;
   }
 
   .bottom-container {
