@@ -142,7 +142,7 @@ export default function Login() {
           </div>
         </div>
         <label className="copyright">
-          LMS, Copyright &#169; 2023 Decode Team
+          LMS, Copyright &#169; 2024 Decode Team
         </label>
       </div>
     </>

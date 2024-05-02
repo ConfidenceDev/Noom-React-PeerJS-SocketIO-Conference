@@ -493,12 +493,20 @@
 }
 
 @media (max-width: 415px) {
+  .stream-container {
+    height: 90vh;
+  }
+
   .bottom-nav {
     height: 10vh;
   }
 
   .bottom-container {
     padding-left: 30%;
+  }
+
+  .bottom-container::-webkit-scrollbar {
+    height: 0;
   }
 
   .nav-btn {
