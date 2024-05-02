@@ -437,6 +437,10 @@
     margin-left: 24px;
   }
 
+  .bottom-container::-webkit-scrollbar {
+    height: 0;
+  }
+
   .toggle-presentation {
     width: 20px;
     height: 20px;
@@ -503,10 +507,6 @@
 
   .bottom-container {
     padding-left: 30%;
-  }
-
-  .bottom-container::-webkit-scrollbar {
-    height: 0;
   }
 
   .nav-btn {
