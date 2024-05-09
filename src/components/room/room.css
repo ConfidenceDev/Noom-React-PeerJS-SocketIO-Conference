@@ -495,10 +495,6 @@
 }
 
 @media (max-width: 415px) {
-  .stream-container {
-    height: 82vh;
-  }
-
   .bottom-container {
     gap: 0px;
   }
@@ -528,5 +524,16 @@
 
   .mem-cover label {
     font-size: 0.3em;
+  }
+}
+
+/*============== IOS ======================== */
+@media only screen and (device-type: mobile) and (-webkit-user-agent: contains("iPhone")) {
+  .stream-container {
+    height: 88vh;
+  }
+
+  .bottom-nav {
+    height: 12vh;
   }
 }
