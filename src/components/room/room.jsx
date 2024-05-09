@@ -11,6 +11,7 @@ import {
   BsFillInfoCircleFill,
 } from "react-icons/bs"
 import { BiExpand, BiCollapse } from "react-icons/bi"
+import { LuAlarmCheck } from "react-icons/lu"
 import { PiPresentationChartFill } from "react-icons/pi"
 import { HiHandRaised } from "react-icons/hi2"
 import { FaPeopleGroup } from "react-icons/fa6"
@@ -25,6 +26,7 @@ import Peer from "peerjs"
 import { v4 as uuidv4 } from "uuid"
 import Modal from "../modal/modal"
 import Kick from "../modal/kick"
+import Timer from "../modal/timer"
 import "../modal/modal.css"
 import io from "socket.io-client"
 import { toast } from "react-toastify"
@@ -53,6 +55,7 @@ export default function Room() {
     window.innerWidth > 1057 ? true : false
   )
   const [meetingDetails, setMeetingDetails] = useState(false)
+  const [timerDialog, setTimerDialog] = useState(false)
   const [isBoard, setIsBoard] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [isDisplay, setIsDisplay] = useState(false)
@@ -578,11 +581,19 @@ export default function Room() {
   const toggleParticipants = () => {
     setIsParticaipants(!isParticipants)
     setMeetingDetails(false)
+    setTimerDialog(false)
   }
 
   const toggleMeetingDetails = () => {
     setMeetingDetails(!meetingDetails)
     setIsParticaipants(false)
+    setTimerDialog(false)
+  }
+
+  const toggleTimer = () => {
+    setTimerDialog(!timerDialog)
+    setIsParticaipants(false)
+    setMeetingDetails(false)
   }
 
   const exitCleanUp = () => {
@@ -645,6 +656,8 @@ export default function Room() {
           kicked={(userId) => removeMember(userId)}
         />
       )}
+
+      {timerDialog && <Timer timerDialog={timerDialog} />}
 
       <div className="stream-container">
         <div
@@ -739,6 +752,11 @@ export default function Room() {
       </div>
       <div className="bottom-nav">
         <div className="bottom-container">
+          <div className="nav-btn" onClick={toggleTimer}>
+            <LuAlarmCheck className="nav-icon timer" />
+            <label>Timer</label>
+          </div>
+
           <div className="nav-btn" onClick={toggleVideo}>
             {videoEnabled ? (
               <BsFillCameraVideoOffFill className="nav-icon" />
@@ -759,13 +777,15 @@ export default function Room() {
             <BsFillChatTextFill className="nav-icon" />
             <label> {isChatVisible ? "Hide Chat" : "Show Chat"}</label>
           </div>
-          <div className="nav-btn">
-            <PiPresentationChartFill
-              className="nav-icon"
-              onClick={startBoard}
-            />
-            <label>Presentation</label>
-          </div>
+          {!isPhone && (
+            <div className="nav-btn">
+              <PiPresentationChartFill
+                className="nav-icon"
+                onClick={startBoard}
+              />
+              <label>Presentation</label>
+            </div>
+          )}
           {/* ========== Admin function =============*/}
           {isAdmin && (
             <div className="nav-btn" onClick={toggleRecord}>

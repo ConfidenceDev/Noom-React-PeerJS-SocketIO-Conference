@@ -1,6 +1,7 @@
 :root {
   --some-white: rgb(250, 249, 249);
   --bg-blue: #16285d;
+  --bg-timer: #1c7c44;
   --chat: rgb(212, 211, 211);
 }
 
@@ -367,6 +368,10 @@
   padding: 10px;
 }
 
+.nav-btn .timer {
+  background-color: var(--bg-timer);
+}
+
 .nav-leave-icon {
   width: 42px;
   height: 42px;
@@ -412,14 +417,15 @@
   gap: 8px;
 }
 
-@media (max-width: 1057px) {
+/* =================== Mobile =================== */
+
+@media (max-width: 1024px) {
   .stream-container {
     height: 82vh;
   }
 
   .bottom-nav {
     height: 18vh;
-    width: 100vw;
   }
 
   .bottom-container {
@@ -429,12 +435,8 @@
     overflow-y: hidden;
   }
 
-  .bottom-container > div:nth-child(2) {
-    margin-right: 24px;
-  }
-
-  .bottom-container > div:nth-last-child(2) {
-    margin-left: 24px;
+  .bottom-container {
+    justify-content: start;
   }
 
   .bottom-container::-webkit-scrollbar {
@@ -466,7 +468,7 @@
   }
 }
 
-@media (max-width: 954px) {
+@media (max-width: 768px) {
   .stream-grid-cover {
     flex-direction: column;
   }
@@ -490,10 +492,6 @@
   .video-stream-container label {
     font-size: 12px;
   }
-
-  .bottom-container {
-    padding-left: 60%;
-  }
 }
 
 @media (max-width: 415px) {
@@ -501,12 +499,16 @@
     height: 82vh;
   }
 
-  .bottom-nav {
-    height: 18vh;
+  .bottom-container {
+    gap: 0px;
   }
 
-  .bottom-container {
-    padding-left: 30%;
+  .bottom-container > div:nth-child(2) {
+    margin-right: 32px;
+  }
+
+  .bottom-container > div:nth-last-child(2) {
+    margin-left: 32px;
   }
 
   .nav-btn {
