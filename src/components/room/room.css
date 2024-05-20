@@ -8,11 +8,13 @@
 .container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  width: 100vw;
   position: relative;
 }
 
 .stream-container {
-  height: 87vh;
+  height: 87%;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -314,7 +316,7 @@
 
 .bottom-nav {
   width: 100%;
-  height: 13vh;
+  height: 13%;
   padding: 8px;
   display: flex;
   flex-direction: row;
@@ -418,7 +420,6 @@
 }
 
 /* =================== Mobile =================== */
-
 @media (max-width: 1024px) {
   .stream-container {
     height: 82vh;
@@ -433,10 +434,6 @@
     align-items: start;
     overflow-x: scroll;
     overflow-y: hidden;
-  }
-
-  .bottom-container {
-    justify-content: start;
   }
 
   .bottom-container::-webkit-scrollbar {
@@ -492,19 +489,25 @@
   .video-stream-container label {
     font-size: 12px;
   }
+
+  .bottom-container > div:nth-child(2) {
+    margin-right: 0px;
+  }
+
+  .bottom-container > div:nth-last-child(2) {
+    margin-left: 0px;
+  }
+}
+
+@media (max-width: 600px) {
+  .bottom-container {
+    justify-content: start;
+  }
 }
 
 @media (max-width: 415px) {
   .bottom-container {
     gap: 0px;
-  }
-
-  .bottom-container > div:nth-child(2) {
-    margin-right: 32px;
-  }
-
-  .bottom-container > div:nth-last-child(2) {
-    margin-left: 32px;
   }
 
   .nav-btn {

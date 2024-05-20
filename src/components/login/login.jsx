@@ -141,9 +141,9 @@ export default function Login() {
             <hr />
           </div>
         </div>
-        <label className="copyright">
-          LMS, Copyright &#169; 2024 Decode Team
-        </label>
+        <div className="copyright">
+          <label>LMS, Copyright &#169; 2024 Decode Team</label>
+        </div>
       </div>
     </>
   )
