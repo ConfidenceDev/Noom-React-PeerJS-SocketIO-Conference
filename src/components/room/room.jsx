@@ -35,8 +35,8 @@ import { toggleLogin } from "../../store"
 import "../animations.css"
 
 //const ENDPOINT = "https://peerserver-two.vercel.app"
-const ENDPOINT = "https://noom-lms-server.onrender.com"
-//const ENDPOINT = "http://localhost:5000"
+//const ENDPOINT = "https://noom-lms-server.onrender.com"
+const ENDPOINT = "http://localhost:5000"
 let socket = null
 let myId = null
 let prevId = null
@@ -73,6 +73,7 @@ export default function Room() {
   const [messages, setMessages] = useState([])
   const [isPhone, setIsPhone] = useState(false)
   const [myPeer, setMyPeer] = useState(null)
+  const [duration, setDuration] = useState(0)
   const videoGridRef = useRef()
   const presentationRef = useRef()
   const ulRef = useRef()
@@ -380,6 +381,10 @@ export default function Room() {
           })
         })
 
+        socket.on("timer", (data) => {
+          setDuration(data)
+        })
+
         peer.on("disconnect", () => {
           peer.connections.forEach((conn) => {
             conn.close()
@@ -657,7 +662,7 @@ export default function Room() {
         />
       )}
 
-      {timerDialog && <Timer timerDialog={timerDialog} />}
+      {timerDialog && <Timer timerDialog={timerDialog} duration={duration} />}
 
       <div className="stream-container">
         <div

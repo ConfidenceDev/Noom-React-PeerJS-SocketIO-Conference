@@ -343,6 +343,10 @@
   margin-left: 64px;
 }
 
+.duration {
+  color: white;
+}
+
 .nav-btn {
   display: flex;
   flex-direction: column;
