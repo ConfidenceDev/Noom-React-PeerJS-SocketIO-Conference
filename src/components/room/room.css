@@ -421,17 +421,17 @@
 
 /* =================== Mobile =================== */
 @media (max-width: 1024px) {
-  .stream-container {
+  /* .stream-container {
     height: 82vh;
   }
 
   .bottom-nav {
     height: 18vh;
-  }
+  } */
 
   .bottom-container {
     gap: 4px;
-    align-items: start;
+    align-items: center;
     overflow-x: scroll;
     overflow-y: hidden;
   }
@@ -527,16 +527,5 @@
 
   .mem-cover label {
     font-size: 0.3em;
-  }
-}
-
-/*============== IOS ======================== */
-@media only screen and (device-type: mobile) and (-webkit-user-agent: contains("iPhone")) {
-  .stream-container {
-    height: 88vh;
-  }
-
-  .bottom-nav {
-    height: 12vh;
   }
 }
