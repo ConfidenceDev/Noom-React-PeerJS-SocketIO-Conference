@@ -435,7 +435,7 @@
 
   .bottom-container {
     gap: 4px;
-    align-items: center;
+    align-items: flex-start;
     overflow-x: scroll;
     overflow-y: hidden;
   }
