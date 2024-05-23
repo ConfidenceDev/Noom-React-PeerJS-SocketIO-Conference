@@ -382,7 +382,12 @@ export default function Room() {
         })
 
         socket.on("timer", (data) => {
-          setDuration(data)
+          if (data === -1) {
+            leave()
+            toast.success("Time Elapsed!")
+          } else if (data === 600) {
+            toast.success("10 mins remaining for this class!")
+          } else setDuration(data)
         })
 
         peer.on("disconnect", () => {
