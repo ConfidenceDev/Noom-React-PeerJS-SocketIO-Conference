@@ -8,7 +8,7 @@ import "../animations.css"
 import { useDispatch } from "react-redux"
 import { toggleLogin, setMeetingAndUser } from "../../store"
 
-export default function Login() {
+export default function Login({ socket }) {
   const [emailId, setEmailId] = useState("")
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -69,7 +69,6 @@ export default function Login() {
       .then((response) => response.json())
       .then((data) => {
         //console.log(data)
-
         const meeting = {
           instructor: data.meeting.instructor,
           instructorId: data.meeting.instructorId,
@@ -87,13 +86,22 @@ export default function Login() {
           img: data.image,
         }
 
-        setIsLoading(false)
-        setIsDisabled(false)
-        dispatch(setMeetingAndUser(meeting, user))
-        dispatch(toggleLogin())
-        setIsDisabled(false)
-        toast.success("You've joined the meeting")
-        navigate(`/lecture/${room}/live`)
+        const duration = data.meeting.duration ? data.meeting.duration : 200
+        socket.emit("join-room", room, data.userId, duration)
+        socket.on("occupied", (data) => {
+          if (data) {
+            toast.error("A User with this ID already exists")
+            return
+          }
+
+          setIsLoading(false)
+          setIsDisabled(false)
+          dispatch(setMeetingAndUser(meeting, user))
+          dispatch(toggleLogin())
+          setIsDisabled(false)
+          toast.success("You've joined the meeting")
+          navigate(`/lecture/${room}/live`)
+        })
       })
       .catch((error) => {
         console.log(error)
