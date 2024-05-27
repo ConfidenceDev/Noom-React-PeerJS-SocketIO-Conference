@@ -32,7 +32,9 @@ import { toast } from "react-toastify"
 import { useDispatch, useSelector } from "react-redux"
 import { toggleLogin } from "../../store"
 import "../animations.css"
+import io from "socket.io-client"
 
+let socket = null
 let myId = null
 let prevId = null
 let boardStream = null
@@ -42,8 +44,10 @@ const calls = {}
 let chatAlert = false
 let uniqueId = uuidv4()
 
-export default function Room({ socket }) {
-  const [myStream, setMyStream] = useState(null)
+export default function Room({ socket_url }) {
+  const loggedIn = useSelector((state) => state.loggedIn)
+  const meetingRecord = useSelector((state) => state.meeting)
+  const userRecord = useSelector((state) => state.user)
   const [videoEnabled, setVideoEnabled] = useState(true)
   const [audioEnabled, setAudioEnabled] = useState(true)
   const [muteAllEnabled, setMuteAllEnabled] = useState(false)
@@ -61,9 +65,6 @@ export default function Room({ socket }) {
   const { room } = useParams()
   const navigate = useNavigate()
   const [membersCount, setMembersCount] = useState("")
-  const loggedIn = useSelector((state) => state.loggedIn)
-  const meetingRecord = useSelector((state) => state.meeting)
-  const userRecord = useSelector((state) => state.user)
   const dispatch = useDispatch()
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState([])
@@ -116,283 +117,286 @@ export default function Room({ socket }) {
         recordId,
       },
     })*/
-    if (myId !== null && myId !== prevId) prevId = myId
-    myId = socket.id
+    socket = io(socket_url)
+    socket.on("connect", () => {
+      if (myId !== null && myId !== prevId) prevId = myId
+      myId = socket.id
 
-    console.log(myId)
-    if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true)
+      const duration = meetingRecord.duration ? meetingRecord.duration : 60
+      socket.emit("join-room", room, userRecord.userId, duration)
 
-    socket.on("nom", (data) => {
-      setMembersCount(data.toString())
-    })
+      if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true)
 
-    const loadStream = async () => {
-      try {
-        const mediaOptions = {
-          video: true,
-          audio: true,
+      socket.on("nom", (data) => {
+        setMembersCount(data.toString())
+      })
+
+      const loadStream = async () => {
+        try {
+          const mediaOptions = {
+            video: true,
+            audio: true,
+          }
+          const stream =
+            (await navigator.mediaDevices.getUserMedia(mediaOptions)) ||
+            (await navigator.mediaDevices.webkitGetUserMedia(mediaOptions)) ||
+            (await navigator.mediaDevices.mozGetUserMedia(mediaOptions)) ||
+            (await navigator.mediaDevices.msGetUserMedia(mediaOptions))
+
+          initializePeer(stream)
+          addVideoStream(myId, stream, "You", userRecord.img)
+        } catch (error) {
+          toast.error("Error accessing media:", error)
+          console.error("Error accessing media:", error)
         }
-        const stream =
-          (await navigator.mediaDevices.getUserMedia(mediaOptions)) ||
-          (await navigator.mediaDevices.webkitGetUserMedia(mediaOptions)) ||
-          (await navigator.mediaDevices.mozGetUserMedia(mediaOptions)) ||
-          (await navigator.mediaDevices.msGetUserMedia(mediaOptions))
-
-        setMyStream(stream)
-        initializePeer(stream)
-        addVideoStream(myId, stream, "You", userRecord.img)
-      } catch (error) {
-        toast.error("Error accessing media:", error)
-        console.error("Error accessing media:", error)
       }
-    }
 
-    loadStream()
-    const initializePeer = (localStream) => {
-      /*const peer = new Peer(myId, {
+      loadStream()
+      const initializePeer = (localStream) => {
+        /*const peer = new Peer(myId, {
           host: "localhost",
           port: 5000,
           path: "/peerjs",
         })*/
-      const peer = new Peer(myId, {
-        host: "noom-lms-server.onrender.com",
-        port: 443,
-        path: "/peerjs",
-        secure: true,
-        config: {
-          iceServers: [
-            {
-              urls: "stun:stun.relay.metered.ca:80",
-            },
-            {
-              urls: "turn:a.relay.metered.ca:80",
-              username: "7f3ab71881d9c115a4fc0189",
-              credential: "750xbgrmZbW0DRxo",
-            },
-            {
-              urls: "turn:a.relay.metered.ca:80?transport=tcp",
-              username: "7f3ab71881d9c115a4fc0189",
-              credential: "750xbgrmZbW0DRxo",
-            },
-            {
-              urls: "turn:a.relay.metered.ca:443",
-              username: "7f3ab71881d9c115a4fc0189",
-              credential: "750xbgrmZbW0DRxo",
-            },
-            {
-              urls: "turn:a.relay.metered.ca:443?transport=tcp",
-              username: "7f3ab71881d9c115a4fc0189",
-              credential: "750xbgrmZbW0DRxo",
-            },
-          ],
-        },
-      })
-      loadPeerListeners(peer, localStream)
-    }
-
-    const loadPeerListeners = (peer, stream) => {
-      peer.on("open", (id) => {
-        setMyPeer(peer)
-        socket.on("mute-all", (value) => {
-          const videoElement = document.querySelector(`.${myId}`)
-          updateMuteIcon(myId, value)
-          const doc = {
-            userId: myId,
-            audioEnabled: value,
-          }
-          socket.emit("mute-me", doc)
-
-          if (videoElement) {
-            const audioTrack = videoElement.srcObject.getAudioTracks()[0]
-            if (audioTrack) audioTrack.enabled = value
-            setAudioEnabled(value)
-          }
+        const peer = new Peer(myId, {
+          host: "noom-lms-server.onrender.com",
+          port: 443,
+          path: "/peerjs",
+          secure: true,
+          config: {
+            iceServers: [
+              {
+                urls: "stun:stun.relay.metered.ca:80",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:80",
+                username: "7f3ab71881d9c115a4fc0189",
+                credential: "750xbgrmZbW0DRxo",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:80?transport=tcp",
+                username: "7f3ab71881d9c115a4fc0189",
+                credential: "750xbgrmZbW0DRxo",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:443",
+                username: "7f3ab71881d9c115a4fc0189",
+                credential: "750xbgrmZbW0DRxo",
+              },
+              {
+                urls: "turn:a.relay.metered.ca:443?transport=tcp",
+                username: "7f3ab71881d9c115a4fc0189",
+                credential: "750xbgrmZbW0DRxo",
+              },
+            ],
+          },
         })
+        loadPeerListeners(peer, localStream)
+      }
 
-        socket.on("room-board-on", async (userID) => {
-          instructor = userID
-          const call = await peer.call(userID, stream)
-
-          setIsBoard(true)
-          setIsDisplay(true)
-          setIsFullScreen(false)
-          call.on("stream", (boardStream) => {
-            addBoardStream(boardStream)
-          })
-        })
-
-        socket.on("room-board-off", () => {
-          instructor = null
-          setIsFullScreen(false)
-          removeBoardStream()
-        })
-
-        socket.on("mute-me", (data) => {
-          updateMuteIcon(data.userId, data.audioEnabled)
-        })
-
-        const updateMuteIcon = (userId, audioEnabled) => {
-          const videoContainer = document.getElementById(`${userId}`)
-          if (!videoContainer) return
-          const muteIcon = videoContainer.querySelector(".video-mute-icon")
-          if (!muteIcon) return
-
-          audioEnabled = !audioEnabled
-          if (audioEnabled) {
-            muteIcon.classList.remove("hide")
-            muteIcon.classList.add("show")
-          } else {
-            muteIcon.classList.remove("show")
-            muteIcon.classList.add("hide")
-          }
-        }
-
-        socket.on("hide-me", (data) => {
-          updateHideImg(data.userId, data.videoEnabled)
-        })
-
-        const updateHideImg = (userId, videoEnabled) => {
-          const videoContainer = document.getElementById(`${userId}`)
-          if (!videoContainer) return
-          const videoElement = videoContainer.querySelector("video")
-          if (!videoElement) return
-
-          const hideVid = videoContainer.querySelector(".video-hide-img")
-          if (!hideVid) return
-
-          videoEnabled = !videoEnabled
-          if (videoEnabled) {
-            hideVid.classList.remove("hide")
-            hideVid.classList.add("show")
-            videoElement.classList.add("hide")
-            videoElement.classList.remove("show")
-          } else {
-            hideVid.classList.remove("show")
-            hideVid.classList.add("hide")
-            videoElement.classList.add("show")
-            videoElement.classList.remove("hide")
-          }
-        }
-
-        socket.on("user-connected", async (userID) => {
-          console.log("Connecting to: " + userID)
-          const call = await peer.call(userID, stream, {
-            metadata: {
-              username: userRecord.username,
-              userId: myId,
-              img: userRecord.img,
-            },
-          })
-
-          let username = "LMS"
-          let userId = ""
-          let img = []
-          socket.on("user-record", (data) => {
-            username = data.username
-            userId = data.userId
-            img = data.img
-
+      const loadPeerListeners = (peer, stream) => {
+        peer.on("open", (id) => {
+          setMyPeer(peer)
+          socket.on("mute-all", (value) => {
+            const videoElement = document.querySelector(`.${myId}`)
+            updateMuteIcon(myId, value)
             const doc = {
-              userId: userId,
-              username: username,
-              img: img,
+              userId: myId,
+              audioEnabled: value,
             }
-            members = [...members, doc]
-            toast.success(`${username} joined the meeting`)
+            socket.emit("mute-me", doc)
+
+            if (videoElement) {
+              const audioTrack = videoElement.srcObject.getAudioTracks()[0]
+              if (audioTrack) audioTrack.enabled = value
+              setAudioEnabled(value)
+            }
           })
-          calls[userID] = call
-          call.on("stream", (userVideoStream) => {
-            addVideoStream(userID, userVideoStream, username, img)
+
+          socket.on("room-board-on", async (userID) => {
+            instructor = userID
+            const call = await peer.call(userID, stream)
+
+            setIsBoard(true)
+            setIsDisplay(true)
+            setIsFullScreen(false)
+            call.on("stream", (boardStream) => {
+              addBoardStream(boardStream)
+            })
+          })
+
+          socket.on("room-board-off", () => {
+            instructor = null
+            setIsFullScreen(false)
+            removeBoardStream()
+          })
+
+          socket.on("mute-me", (data) => {
+            updateMuteIcon(data.userId, data.audioEnabled)
+          })
+
+          const updateMuteIcon = (userId, audioEnabled) => {
+            const videoContainer = document.getElementById(`${userId}`)
+            if (!videoContainer) return
+            const muteIcon = videoContainer.querySelector(".video-mute-icon")
+            if (!muteIcon) return
+
+            audioEnabled = !audioEnabled
+            if (audioEnabled) {
+              muteIcon.classList.remove("hide")
+              muteIcon.classList.add("show")
+            } else {
+              muteIcon.classList.remove("show")
+              muteIcon.classList.add("hide")
+            }
+          }
+
+          socket.on("hide-me", (data) => {
+            updateHideImg(data.userId, data.videoEnabled)
+          })
+
+          const updateHideImg = (userId, videoEnabled) => {
+            const videoContainer = document.getElementById(`${userId}`)
+            if (!videoContainer) return
+            const videoElement = videoContainer.querySelector("video")
+            if (!videoElement) return
+
+            const hideVid = videoContainer.querySelector(".video-hide-img")
+            if (!hideVid) return
+
+            videoEnabled = !videoEnabled
+            if (videoEnabled) {
+              hideVid.classList.remove("hide")
+              hideVid.classList.add("show")
+              videoElement.classList.add("hide")
+              videoElement.classList.remove("show")
+            } else {
+              hideVid.classList.remove("show")
+              hideVid.classList.add("hide")
+              videoElement.classList.add("show")
+              videoElement.classList.remove("hide")
+            }
+          }
+
+          socket.on("user-connected", async (userID) => {
+            console.log("Connecting to: " + userID)
+            const call = await peer.call(userID, stream, {
+              metadata: {
+                username: userRecord.username,
+                userId: myId,
+                img: userRecord.img,
+              },
+            })
+
+            let username = "LMS"
+            let userId = ""
+            let img = []
+            socket.on("user-record", (data) => {
+              username = data.username
+              userId = data.userId
+              img = data.img
+
+              const doc = {
+                userId: userId,
+                username: username,
+                img: img,
+              }
+              members = [...members, doc]
+              toast.success(`${username} joined the meeting`)
+            })
+            calls[userID] = call
+            call.on("stream", (userVideoStream) => {
+              addVideoStream(userID, userVideoStream, username, img)
+            })
+          })
+
+          socket.on("user-disconnected", (userID) => {
+            if (calls[userID]) calls[userID].close()
+            const member = members.find((member) => member.userId === userID)
+            if (member) toast.error(`${member.username} left the meeting`)
+            updateMembers(userID)
+            removeVideoStream(userID)
+          })
+
+          socket.on("kick", (userId) => {
+            if (userId === myId) {
+              leave()
+              toast.success("You've been removed by the instructor")
+            } else {
+              const member = members.find((member) => member.userId === userId)
+              if (member) toast.error(`${member.username} has been removed`)
+              updateMembers(userId)
+            }
+          })
+
+          socket.on("message", (msg) => {
+            if (msg.userId === myId) msg.username = "You"
+            setMessages((prevMessages) => [...prevMessages, msg])
+            if (msg.userId !== myId && chatAlert) {
+              const content = `${msg.username}: ${
+                msg.msg.length > 10 ? `${msg.msg.substring(0, 10)}...` : msg.msg
+              }`
+              toast.success(content)
+            }
+            if (ulRef.current)
+              ulRef.current.scrollTop = ulRef.current.scrollHeight
           })
         })
 
-        socket.on("user-disconnected", (userID) => {
-          if (calls[userID]) calls[userID].close()
-          const member = members.find((member) => member.userId === userID)
-          if (member) toast.error(`${member.username} left the meeting`)
-          updateMembers(userID)
-          removeVideoStream(userID)
-        })
-
-        socket.on("kick", (userId) => {
-          if (userId === myId) {
-            leave()
-            toast.success("You've been removed by the instructor")
-          } else {
-            const member = members.find((member) => member.userId === userId)
-            if (member) toast.error(`${member.username} has been removed`)
-            updateMembers(userId)
-          }
-        })
-
-        socket.on("message", (msg) => {
-          if (msg.userId === myId) msg.username = "You"
-          setMessages((prevMessages) => [...prevMessages, msg])
-          if (msg.userId !== myId && chatAlert) {
-            const content = `${msg.username}: ${
-              msg.msg.length > 10 ? `${msg.msg.substring(0, 10)}...` : msg.msg
-            }`
-            toast.success(content)
-          }
-          if (ulRef.current)
-            ulRef.current.scrollTop = ulRef.current.scrollHeight
-        })
-      })
-
-      peer.on("call", (call) => {
-        /*if (call.metadata !== undefined && myId === call.metadata.userId) {
+        peer.on("call", (call) => {
+          /*if (call.metadata !== undefined && myId === call.metadata.userId) {
           leave()
           toast.error("A User with this ID already exists")
           return
         }*/
-        const doc = {
-          username: userRecord.username,
-          userId: myId,
-          img: userRecord.img,
-        }
-        socket.emit("user-record", call.peer, doc)
-
-        if (instructor === myId && boardStream) call.answer(boardStream)
-        else call.answer(stream)
-
-        call.on("stream", (userVideoStream) => {
-          const existingVideoElement = document.getElementById(call.peer)
-          if (!existingVideoElement) {
-            const doc = {
-              userId: call.metadata.userId,
-              username: call.metadata.username,
-              img: call.metadata.img,
-            }
-            members = [...members, doc]
-            addVideoStream(
-              call.peer,
-              userVideoStream,
-              call.metadata.username,
-              call.metadata.img
-            )
-
-            if (instructor === null) socket.emit("check-presentation")
+          const doc = {
+            username: userRecord.username,
+            userId: myId,
+            img: userRecord.img,
           }
-        })
-      })
+          socket.emit("user-record", call.peer, doc)
 
-      console.log(socket)
-      socket.on("timer", (data) => {
-        if (data === -1) {
-          leave()
-          toast.success("Time Elapsed!")
-        } else if (data === 600) {
-          toast.success("10 mins remaining for this class!")
-        } else setDuration(data)
-      })
+          if (instructor === myId && boardStream) call.answer(boardStream)
+          else call.answer(stream)
 
-      peer.on("disconnect", () => {
-        peer.connections.forEach((conn) => {
-          conn.close()
+          call.on("stream", (userVideoStream) => {
+            const existingVideoElement = document.getElementById(call.peer)
+            if (!existingVideoElement) {
+              const doc = {
+                userId: call.metadata.userId,
+                username: call.metadata.username,
+                img: call.metadata.img,
+              }
+              members = [...members, doc]
+              addVideoStream(
+                call.peer,
+                userVideoStream,
+                call.metadata.username,
+                call.metadata.img
+              )
+
+              if (instructor === null) socket.emit("check-presentation")
+            }
+          })
         })
-        peer.destroy()
-      })
-    }
+
+        socket.on("timer", (data) => {
+          if (data === -1) {
+            leave()
+            toast.success("Time Elapsed!")
+          } else if (data === 30) {
+            toast.info("10 mins remaining for this class!")
+          } else setDuration(data)
+        })
+
+        peer.on("disconnect", () => {
+          peer.connections.forEach((conn) => {
+            conn.close()
+          })
+          peer.destroy()
+        })
+      }
+    })
 
     window.addEventListener("resize", handleResize)
     window.addEventListener("beforeunload", handleBeforeUnload)
@@ -603,13 +607,10 @@ export default function Room({ socket }) {
 
   const exitCleanUp = () => {
     try {
-      console.log(myId)
       const videoContainer = document.getElementById(`${myId}`)
       const videoElement = videoContainer.querySelector("video")
 
       if (videoElement) {
-        console.log(videoElement)
-
         const tracks = videoElement.srcObject.getTracks()
         tracks.forEach((track) => track.stop())
       }

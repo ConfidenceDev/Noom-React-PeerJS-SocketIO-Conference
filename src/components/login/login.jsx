@@ -7,8 +7,10 @@ import "./login.css"
 import "../animations.css"
 import { useDispatch } from "react-redux"
 import { toggleLogin, setMeetingAndUser } from "../../store"
+import io from "socket.io-client"
 
-export default function Login({ socket }) {
+export default function Login({ socket_url }) {
+  const [socket, setSocket] = useState(null)
   const [emailId, setEmailId] = useState("")
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -17,6 +19,11 @@ export default function Login({ socket }) {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
+    const socket = io(socket_url)
+    socket.on("connect", () => {
+      setSocket(socket)
+    })
+
     //fetch("https://peerserver-two.vercel.app")
     fetch(`https://noom-lms-server.onrender.com`)
       //fetch(`http://localhost:5000`)
@@ -26,6 +33,11 @@ export default function Login({ socket }) {
       .catch((error) => {
         console.log(error)
       })
+
+    return () => {
+      socket.off("connect")
+      socket.disconnect()
+    }
   }, [])
 
   const loadRoom = () => {
@@ -86,11 +98,17 @@ export default function Login({ socket }) {
           img: data.image,
         }
 
-        const duration = data.meeting.duration ? data.meeting.duration : 200
-        socket.emit("join-room", room, data.userId, duration)
-        socket.on("occupied", (data) => {
-          if (data) {
-            toast.error("A User with this ID already exists")
+        if (socket === null) {
+          toast.loading("Loading resources")
+          return
+        }
+
+        socket.emit("start", data.userId, data.meeting.instructorId)
+        socket.on("occupied", (exists, msg) => {
+          if (exists) {
+            toast.warning(`${msg}`)
+            setIsDisabled(false)
+            setIsLoading(false)
             return
           }
 
