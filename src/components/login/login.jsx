@@ -133,7 +133,7 @@ export default function Login({ socket_url }) {
 
   return (
     <>
-      <div className={`container`}>
+      <div className={`login-container`}>
         <div className="nav">
           <div className="logo">
             <img src={Logo} alt="logo" />
