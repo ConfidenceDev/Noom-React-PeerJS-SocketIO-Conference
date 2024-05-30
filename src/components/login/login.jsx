@@ -117,9 +117,9 @@ export default function Login({ socket_url }) {
           setIsDisabled(false)
           dispatch(setMeetingAndUser(meeting, user))
           dispatch(toggleLogin())
+          navigate(`/lecture/${room}/live`)
           setIsDisabled(false)
           toast.success("You've joined the meeting")
-          navigate(`/lecture/${room}/live`)
         })
       })
       .catch((error) => {
