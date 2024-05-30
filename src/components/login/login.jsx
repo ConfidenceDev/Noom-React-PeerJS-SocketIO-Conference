@@ -99,7 +99,8 @@ export default function Login({ socket_url }) {
         }
 
         if (socket === null) {
-          toast.loading("Network delay, retrying")
+          toast.info("Network delay, retrying")
+          setIsDisabled(false)
           return
         }
 
