@@ -430,13 +430,13 @@
 
 /* =================== Mobile =================== */
 @media (max-width: 1024px) {
-  /* .stream-container {
-    height: 82vh;
+  .stream-container {
+    height: 75vh;
   }
 
   .bottom-nav {
-    height: 18vh;
-  } */
+    height: 25vh;
+  }
 
   .bottom-container {
     gap: 4px;
@@ -515,10 +515,6 @@
 }
 
 @media (max-width: 415px) {
-  .bottom-nav {
-    height: 25vh;
-  }
-
   .bottom-container {
     gap: 0px;
   }
