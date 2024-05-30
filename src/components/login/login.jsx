@@ -99,7 +99,7 @@ export default function Login({ socket_url }) {
         }
 
         if (socket === null) {
-          toast.loading("Loading resources")
+          toast.loading("Network delay, retrying")
           return
         }
 
