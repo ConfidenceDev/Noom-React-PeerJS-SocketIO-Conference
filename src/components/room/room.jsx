@@ -41,7 +41,7 @@ let boardStream = null
 let instructor = null
 let members = []
 const calls = {}
-//let chatAlert = false
+let chatAlert = false
 let uniqueId = uuidv4()
 
 export default function Room({ socket_url }) {
@@ -54,7 +54,7 @@ export default function Room({ socket_url }) {
   const [isChatVisible, setIsChatVisible] = useState(
     window.innerWidth > 1057 ? true : false
   )
-  const [chatAlert, setChatAlert] = useState(false)
+  //const [chatAlert, setChatAlert] = useState(false)
   const [meetingDetails, setMeetingDetails] = useState(false)
   const [timerDialog, setTimerDialog] = useState(false)
   const [isBoard, setIsBoard] = useState(false)
@@ -322,7 +322,7 @@ export default function Room({ socket_url }) {
           socket.on("kick", (userId) => {
             if (userId === myId) {
               leave()
-              toast.success("You've been removed by the instructor")
+              toast.info("You've been removed by the instructor")
             } else {
               const member = members.find((member) => member.userId === userId)
               if (member) toast.error(`${member.username} has been removed`)
@@ -414,7 +414,7 @@ export default function Room({ socket_url }) {
   }
 
   const handleResize = () => {
-    if (window.innerWidth < 1057) setChatAlert(true)
+    if (window.innerWidth < 1057) chatAlert = true
     setIsPhone(window.innerWidth < 1057)
   }
 
@@ -580,8 +580,8 @@ export default function Room({ socket_url }) {
   }
 
   const toggleChat = () => {
-    //chatAlert = !chatAlert
-    setChatAlert(!chatAlert)
+    chatAlert = !chatAlert
+    //setChatAlert(!chatAlert)
     setIsChatVisible(!isChatVisible)
   }
 
