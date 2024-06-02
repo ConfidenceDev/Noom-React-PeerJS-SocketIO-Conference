@@ -123,7 +123,7 @@ export default function Room({ socket_url }) {
       if (myId !== null && myId !== prevId) prevId = myId
       myId = socket.id
 
-      const duration = meetingRecord.duration ? meetingRecord.duration : 7200 //2hrs
+      const duration = meetingRecord.duration ? meetingRecord.duration : 7200 //7200=2hrs
       socket.emit("join-room", room, userRecord.userId, duration)
 
       if (meetingRecord.instructorId === userRecord.userId) setIsAdmin(true)
@@ -567,7 +567,7 @@ export default function Room({ socket_url }) {
   }
 
   const toggleRecord = () => {
-    toast.success("Coming soon")
+    toast.info("Coming soon")
   }
 
   const toggleMuteAll = () => {

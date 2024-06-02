@@ -4,6 +4,15 @@ import { AiOutlineClose } from "react-icons/ai"
 
 export default function Kick({ kick, members, kicked }) {
   const [showKick, setShowKick] = useState(kick)
+  const uniqueMembers = []
+  const seenUsernames = new Set()
+
+  members.forEach((member) => {
+    if (!seenUsernames.has(member.username)) {
+      seenUsernames.add(member.username)
+      uniqueMembers.push(member)
+    }
+  })
 
   const kickMember = (obj) => {
     kicked(obj.userId)
@@ -24,10 +33,10 @@ export default function Kick({ kick, members, kicked }) {
               <AiOutlineClose className="close-btn" onClick={toggleKick} />
             </div>
             <ul className="kick-members">
-              {members.length < 1 && (
+              {uniqueMembers.length < 1 && (
                 <label className="no-members">No members</label>
               )}
-              {members.map((obj, index) => (
+              {uniqueMembers.map((obj, index) => (
                 <li key={obj.userId}>
                   <div className="kick-item-user">
                     <label className="kick-name">{obj.username}</label>

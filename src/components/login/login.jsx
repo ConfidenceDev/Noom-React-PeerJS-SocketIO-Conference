@@ -19,7 +19,6 @@ export default function Login({ socket_url }) {
   const { room } = useParams()
   const [isDisabled, setIsDisabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  //const [meetingData, setMeetingData] = useState(null)
 
   useEffect(() => {
     const socket = io(socket_url)
@@ -27,9 +26,7 @@ export default function Login({ socket_url }) {
       setSocket(socket)
     })
 
-    //fetch("https://peerserver-two.vercel.app")
     fetch(`https://noom-lms-server.onrender.com`)
-      //fetch(`http://localhost:5000`)
       .then((response) => {
         console.log(response.status)
       })
@@ -38,8 +35,6 @@ export default function Login({ socket_url }) {
       })
 
     socket.on("occupied", (exists, msg) => {
-      console.log("Here: " + exists)
-
       if (exists) {
         toast.warning(`${msg}`)
         setIsDisabled(false)
