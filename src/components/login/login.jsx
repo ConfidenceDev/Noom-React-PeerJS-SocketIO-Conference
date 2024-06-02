@@ -9,6 +9,8 @@ import { useDispatch } from "react-redux"
 import { toggleLogin, setMeetingAndUser } from "../../store"
 import io from "socket.io-client"
 
+let meetingData = null
+
 export default function Login({ socket_url }) {
   const [socket, setSocket] = useState(null)
   const [emailId, setEmailId] = useState("")
@@ -17,6 +19,7 @@ export default function Login({ socket_url }) {
   const { room } = useParams()
   const [isDisabled, setIsDisabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  //const [meetingData, setMeetingData] = useState(null)
 
   useEffect(() => {
     const socket = io(socket_url)
@@ -34,6 +37,39 @@ export default function Login({ socket_url }) {
         console.log(error)
       })
 
+    socket.on("occupied", (exists, msg) => {
+      console.log("Here: " + exists)
+
+      if (exists) {
+        toast.warning(`${msg}`)
+        setIsDisabled(false)
+        setIsLoading(false)
+      } else {
+        const meeting = {
+          instructor: meetingData.meeting.instructor,
+          instructorId: meetingData.meeting.instructorId,
+          room: meetingData.meeting.roomId,
+          course: meetingData.meeting.courseName,
+          desc: meetingData.meeting.description,
+          date: meetingData.meeting.date,
+          time: meetingData.meeting.time,
+        }
+
+        const user = {
+          username: meetingData.name,
+          userId: meetingData.userId,
+          email: emailId,
+          img: meetingData.image,
+        }
+
+        setIsLoading(false)
+        setIsDisabled(false)
+        dispatch(setMeetingAndUser(meeting, user))
+        dispatch(toggleLogin())
+        navigate(`/lecture/${room}/live`)
+        toast.success("You've joined the meeting")
+      }
+    })
     return () => {
       socket.off("connect")
       socket.disconnect()
@@ -81,23 +117,7 @@ export default function Login({ socket_url }) {
       .then((response) => response.json())
       .then((data) => {
         //console.log(data)
-        const meeting = {
-          instructor: data.meeting.instructor,
-          instructorId: data.meeting.instructorId,
-          room: data.meeting.roomId,
-          course: data.meeting.courseName,
-          desc: data.meeting.description,
-          date: data.meeting.date,
-          time: data.meeting.time,
-        }
-
-        const user = {
-          username: data.name,
-          userId: data.userId,
-          email: emailId,
-          img: data.image,
-        }
-
+        meetingData = data
         if (socket === null) {
           toast.info("Network delay, retrying")
           setIsDisabled(false)
@@ -105,22 +125,6 @@ export default function Login({ socket_url }) {
         }
 
         socket.emit("start", data.userId, data.meeting.instructorId)
-        socket.on("occupied", (exists, msg) => {
-          if (exists) {
-            toast.warning(`${msg}`)
-            setIsDisabled(false)
-            setIsLoading(false)
-            return
-          }
-
-          setIsLoading(false)
-          setIsDisabled(false)
-          dispatch(setMeetingAndUser(meeting, user))
-          dispatch(toggleLogin())
-          navigate(`/lecture/${room}/live`)
-          setIsDisabled(false)
-          toast.success("You've joined the meeting")
-        })
       })
       .catch((error) => {
         console.log(error)
