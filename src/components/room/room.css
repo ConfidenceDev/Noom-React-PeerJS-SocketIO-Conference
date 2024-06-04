@@ -261,7 +261,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .btm-col-top {
@@ -369,6 +369,7 @@
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
+  font-size: 1.1em;
 }
 
 .nav-icon {
