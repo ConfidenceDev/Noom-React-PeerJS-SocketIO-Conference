@@ -26,13 +26,13 @@ export default function Login({ socket_url }) {
       setSocket(socket)
     })
 
-    fetch(`https://noom-lms-server.onrender.com`)
+    /*fetch(`https://noom-lms-server.onrender.com`)
       .then((response) => {
         console.log(response.status)
       })
       .catch((error) => {
         console.log(error)
-      })
+      })*/
 
     socket.on("occupied", (exists, msg) => {
       if (exists) {

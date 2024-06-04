@@ -641,7 +641,7 @@ export default function Room({ socket_url }) {
   }
 
   return (
-    <div className={`container`}>
+    <div className={`room-container`}>
       {meetingDetails && (
         <Modal
           meeting={meetingDetails}
