@@ -218,7 +218,7 @@
   width: 100%;
   justify-content: start;
   align-items: start;
-  font-size: 0.8em;
+  font-size: 0.9em;
 }
 
 .msg-container li {
@@ -260,7 +260,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
+  gap: 5px;
+  margin-bottom: 4px;
 }
 
 .btm-col-top {
@@ -538,6 +539,6 @@
   }
 
   .mem-cover label {
-    font-size: 0.35em;
+    font-size: 0.4em;
   }
 }
