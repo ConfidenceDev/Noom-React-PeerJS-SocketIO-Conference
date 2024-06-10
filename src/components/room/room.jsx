@@ -727,7 +727,7 @@ export default function Room({ socket_url }) {
                   <div className="msg-container">
                     <div className="msg-top">
                       <label className="msg-name">{obj.username}</label>
-                      <label className="msg-date">{obj.date}</label>
+                      <label className="msg-date">{`${obj.date} WAT`}</label>
                     </div>
                     <div className="msg-bottom">
                       <img

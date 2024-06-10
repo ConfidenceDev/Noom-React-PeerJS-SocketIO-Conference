@@ -21,18 +21,18 @@ export default function Login({ socket_url }) {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    const socket = io(socket_url)
-    socket.on("connect", () => {
-      setSocket(socket)
-    })
-
-    /*fetch(`https://noom-lms-server.onrender.com`)
+    fetch(`https://noom-lms-server.onrender.com`)
       .then((response) => {
         console.log(response.status)
       })
       .catch((error) => {
         console.log(error)
-      })*/
+      })
+
+    const socket = io(socket_url)
+    socket.on("connect", () => {
+      setSocket(socket)
+    })
 
     socket.on("occupied", (exists, msg) => {
       if (exists) {
@@ -112,6 +112,7 @@ export default function Login({ socket_url }) {
       .then((response) => response.json())
       .then((data) => {
         //console.log(data)
+        data.meeting.time = 1718019302017 + 10 * 60 * 1000
         meetingData = data
         if (socket === null) {
           toast.info("Network delay, retrying")
@@ -119,7 +120,12 @@ export default function Login({ socket_url }) {
           return
         }
 
-        socket.emit("start", data.userId, data.meeting.instructorId)
+        socket.emit(
+          "start",
+          data.userId,
+          data.meeting.instructorId,
+          data.meeting.time
+        )
       })
       .catch((error) => {
         console.log(error)
