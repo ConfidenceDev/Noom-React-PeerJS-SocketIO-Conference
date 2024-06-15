@@ -46,8 +46,9 @@ export default function Login({ socket_url }) {
           room: meetingData.meeting.roomId,
           course: meetingData.meeting.courseName,
           desc: meetingData.meeting.description,
-          date: meetingData.meeting.date,
-          time: meetingData.meeting.time,
+          date: meetingData.meeting.startDate,
+          time: meetingData.meeting.startTime,
+          duration: meetingData.meeting.duration,
         }
 
         const user = {
@@ -91,8 +92,9 @@ export default function Login({ socket_url }) {
     //spacemars666@gmail.com
     //decodeanalytical@gmail.com
     //ebisedi@yahoo.com || lms983
-    //masac44960@undewp.com || lms470
+    //masac44960@undewp.com || lms470, lms851
     //macsonline500@gmail.com
+    //arebine@gmail.com
     setIsLoading(true)
     setIsDisabled(true)
     const options = {
@@ -105,14 +107,23 @@ export default function Login({ socket_url }) {
       }),
     }
     fetch(
-      //`https://server-eight-beige.vercel.app/api/admin/joinmeeting/${room}`,
       `https://decode-mnjh.onrender.com/api/admin/joinmeeting/${room}`,
       options
     )
       .then((response) => response.json())
       .then((data) => {
+        data.meeting.startDate = "2024-06-16"
+        //data.meeting.startTime = "10:30:00"
+        //data.meeting.duration = 7200
         //console.log(data)
-        data.meeting.time = 1718019302017 + 10 * 60 * 1000
+
+        if (data.message) {
+          toast.info(data.message)
+          setIsLoading(false)
+          setIsDisabled(false)
+          return
+        }
+
         meetingData = data
         if (socket === null) {
           toast.info("Network delay, retrying")
@@ -122,9 +133,10 @@ export default function Login({ socket_url }) {
 
         socket.emit(
           "start",
-          data.userId,
-          data.meeting.instructorId,
-          data.meeting.time
+          meetingData.userId,
+          meetingData.meeting.instructorId,
+          meetingData.meeting.startDate,
+          meetingData.meeting.startTime
         )
       })
       .catch((error) => {

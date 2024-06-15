@@ -723,7 +723,7 @@ export default function Room({ socket_url }) {
             </div>
             <ul ref={ulRef} className="stream-right-mid">
               {messages.map((obj, index) => (
-                <li key={index}>
+                <li key={obj.utc}>
                   <div className="msg-container">
                     <div className="msg-top">
                       <label className="msg-name">{obj.username}</label>
