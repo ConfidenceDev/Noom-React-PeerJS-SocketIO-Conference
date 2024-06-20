@@ -14,11 +14,14 @@ let meetingData = null
 export default function Login({ socket_url }) {
   const [socket, setSocket] = useState(null)
   const [emailId, setEmailId] = useState("")
+  const [passcode, setPassCode] = useState("")
+  const [btnText, setBtnText] = useState("Sign In")
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { room } = useParams()
   const [isDisabled, setIsDisabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [enterCode, setEnterCode] = useState(false)
 
   useEffect(() => {
     fetch(`https://noom-lms-server.onrender.com`)
@@ -59,7 +62,6 @@ export default function Login({ socket_url }) {
         }
 
         setIsLoading(false)
-        setIsDisabled(false)
         dispatch(setMeetingAndUser(meeting, user))
         dispatch(toggleLogin())
         navigate(`/lecture/${room}/live`)
@@ -97,12 +99,46 @@ export default function Login({ socket_url }) {
     //arebine@gmail.com
     setIsLoading(true)
     setIsDisabled(true)
+
+    if (btnText === "Sign In") {
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailId.trim(),
+        }),
+      }
+      fetch(`https://decode-mnjh.onrender.com/api/admin/otpForMeeting`, options)
+        .then((response) => {
+          setIsLoading(false)
+          setEnterCode(true)
+          setIsDisabled(false)
+          setBtnText("Join Meeting")
+
+          toast.success(
+            "An email with a Passcode has been sent to your mailbox"
+          )
+        })
+        .catch((error) => {
+          console.log(error)
+          setIsLoading(false)
+          setIsDisabled(false)
+          toast.error("Something went wrong, try again or contact the admin")
+        })
+
+      return
+    }
+
+    setIsDisabled(true)
     const options = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        passcode: passcode.trim(),
         email: emailId.trim(),
       }),
     }
@@ -112,7 +148,7 @@ export default function Login({ socket_url }) {
     )
       .then((response) => response.json())
       .then((data) => {
-        data.meeting.startDate = "2024-06-16"
+        //data.meeting.startDate = "2024-06-15"
         //data.meeting.startTime = "10:30:00"
         //data.meeting.duration = 7200
         //console.log(data)
@@ -142,7 +178,7 @@ export default function Login({ socket_url }) {
       .catch((error) => {
         console.log(error)
         toast.error(
-          "Something went wrong: check if you are registered for this course!"
+          "Error: confirm passcode or check if you are registered for this course!"
         )
         setIsDisabled(false)
         setIsLoading(false)
@@ -170,13 +206,24 @@ export default function Login({ socket_url }) {
                 onChange={(e) => setEmailId(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
+              {enterCode && (
+                <input
+                  className="passcode-input"
+                  type="text"
+                  value={passcode}
+                  placeholder="Enter Code"
+                  autoComplete="off"
+                  onChange={(e) => setPassCode(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+              )}
               <button
                 onClick={() => {
                   loadRoom()
                 }}
                 disabled={isDisabled}
               >
-                Join Meeting
+                {btnText}
               </button>
               <div
                 className={`loading-spinner ${isLoading ? "show" : "hide"}`}

@@ -98,6 +98,10 @@
   font-size: 1.2em;
 }
 
+.login .passcode-input {
+  width: 10vw;
+}
+
 .login button {
   border: none;
   border-radius: 4px;
@@ -181,7 +185,8 @@
     margin: 0 24px;
   }
 
-  .login input {
+  .login input,
+  .login .passcode-input {
     width: 100%;
     font-size: 1em;
   }
