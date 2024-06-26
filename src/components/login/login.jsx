@@ -138,7 +138,7 @@ export default function Login({ socket_url }) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        passcode: passcode.trim(),
+        token: passcode.trim(),
         email: emailId.trim(),
       }),
     }
