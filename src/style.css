@@ -1,0 +1,445 @@
+:root {
+  --primary-color: #4070f4;
+  --secondary-color: #262938;
+  --secondary-light: #3e6981;
+  --secondary-hover: #385361;
+  --accent-color: #6b394c;
+  --grey: #616161;
+  --light-grey: #888888;
+  --secondary-grey: #555555;
+  --dark-grey: #1d1d1d;
+  --box: rgba(0, 0, 0, 0.5);
+  --meeting: #1a1b1d;
+  --chat: #e1e1e1;
+}
+
+:root {
+  --mb-1: 0.5rem;
+  --mb-2: 1rem;
+  --mb-3: 1.5rem;
+  --mb-4: 2rem;
+  --mb-5: 2.5rem;
+  --mb-6: 3rem;
+}
+
+body,
+html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Ubuntu", serif;
+  font-weight: 400;
+  font-style: normal;
+  box-sizing: border-box;
+  background-color: var(--meeting);
+  color: white;
+  overflow: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Home Container */
+
+.home {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 70vh;
+}
+
+.home .logo {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.home .logo img {
+  width: 48px;
+  height: 48px;
+}
+
+.home .logo label {
+  font-size: 1.5rem;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.home h1 {
+  font-weight: bold;
+  font-size: 3rem;
+  color: whitesmoke;
+}
+
+.home-items {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-items input {
+  outline: none;
+  border: 1px solid whitesmoke;
+  font-size: 1.2rem;
+  color: black;
+  padding: 12px;
+  margin: 8px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  width: 40vw;
+  font-family: "Ubuntu", serif;
+}
+
+.btns-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 40vw;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btns-container button {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.8rem;
+  font-family: "Ubuntu", serif;
+}
+
+.loading {
+  color: whitesmoke;
+  font-size: 2rem;
+  margin: 16px;
+  align-self: center;
+}
+
+.copyright {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  color: white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.copyright label {
+  align-self: center;
+  text-align: center;
+}
+
+/* Stream Video Container */
+.str-video {
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-color);
+}
+
+/* Call Layout */
+.call-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  background-color: var(--secondary-color);
+}
+
+/* Main Content (Video and Controls) */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Video Area */
+.str-video__speaker-layout {
+  flex: 1;
+  width: 100%;
+  background-color: var(--dark-grey);
+}
+
+/* Controls Bar */
+.controls-bar {
+  background-color: var(--meeting);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid var(--secondary-grey);
+}
+
+/* Toggle Buttons */
+.call-btn {
+  background-color: var(--meeting);
+  border: none;
+  padding: 8px;
+  margin: 0;
+  border-radius: 32px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.call-btn img {
+  width: 22px;
+  height: 22px;
+}
+
+.participant-btn {
+  margin-left: 8px;
+  margin-right: 16px;
+}
+
+.call-btn:hover {
+  background-color: var(--secondary-grey);
+}
+
+.str-video__call-controls {
+  margin: 8px;
+}
+
+/* Sidebar (Participants and Chat) */
+.sidebar {
+  width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1b1d;
+  transition: width 0.3s ease;
+  overflow-y: none;
+  height: 100vh;
+  box-shadow: inset 1px 0 0 var(--meeting);
+}
+
+.sidebar.visible {
+  width: 320px; /* Desktop width */
+}
+
+/* Participant List */
+.participants-wrapper {
+  padding: 8px;
+  flex: 1;
+  min-height: calc(50% - 30px);
+  overflow-y: scroll;
+  margin-bottom: 16px;
+}
+
+.str-video__participant-list {
+  background-color: transparent;
+  padding: 10px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.str-video__participant-list--vertical .str-video__participant-list-item {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: var(--secondary-color);
+  border-radius: 4px;
+  color: white;
+  font-size: 14px;
+}
+
+/* Chat Section */
+.chat-wrapper {
+  padding: 8px 16px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: calc(50% - 30px);
+  margin: 8px;
+  width: 100%;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  background-color: var(--secondary-color);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  margin: 5px 0;
+  background-color: var(--dark-grey);
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.chat-message .date {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.chat-input {
+  display: flex;
+  gap: 8px;
+  margin-right: 8px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: white;
+  color: black;
+  font-size: 14px;
+  outline: none;
+  font-family: "Ubuntu", serif;
+}
+
+.chat-input button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: "Ubuntu", serif;
+}
+
+.chat-input button:hover {
+  background-color: var(--primary-color);
+}
+
+/* Headings */
+.chat-wrapper h3,
+.participants-wrapper h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: var(--chat);
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 16px;
+  color: white;
+}
+
+/* Responsive Design */
+@media (min-width: 1062px) {
+  .btns-container button {
+    font-size: 1.2rem;
+    font-family: "Ubuntu", serif;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-items input {
+    width: 70vw;
+  }
+
+  .btns-container {
+    flex-direction: column;
+    width: 70vw;
+  }
+
+  .btns-container button {
+    font-size: 1rem;
+    font-family: "Ubuntu", serif;
+  }
+
+  .call-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    transition: height 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.visible {
+    width: 100%;
+    height: 70%; /* Show sidebar as a panel on mobile */
+  }
+
+  .main-content {
+    height: 100%;
+  }
+
+  .controls-bar {
+    padding: 10px;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2);
+    overflow-x: scroll;
+  }
+
+  .str-video__call-controls button {
+    margin: 0;
+  }
+
+  .toggle-button {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin: 5px;
+  }
+
+  .str-video__speaker-layout {
+    height: calc(100% - 60px); /* Adjust for controls */
+  }
+
+  .chat-wrapper,
+  .participants-wrapper {
+    padding: 10px;
+  }
+
+  .chat-messages {
+    max-height: 40vh;
+    margin-right: 8px;
+  }
+
+  .chat-input {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .chat-input input,
+  .chat-input button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 368px) {
+  .controls-bar {
+    justify-content: left;
+  }
+}
