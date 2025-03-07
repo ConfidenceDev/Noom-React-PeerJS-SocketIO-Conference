@@ -90,7 +90,8 @@ export default function Room() {
   }
 
   const handleLeave = async () => {
-    call.endCall();
+    //call.leave();
+    //call.endCall(); //End call if owner
     navigate("/");
   };
 

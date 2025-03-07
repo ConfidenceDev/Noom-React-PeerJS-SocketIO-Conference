@@ -66,6 +66,7 @@ html {
   align-items: center;
   width: 100%;
   height: 70vh;
+  overflow: hidden;
 }
 
 .home .logo {
@@ -390,7 +391,7 @@ html {
 
   .sidebar.visible {
     width: 100%;
-    height: 70%; /* Show sidebar as a panel on mobile */
+    height: 85%; /* Show sidebar as a panel on mobile */
   }
 
   .main-content {
@@ -401,6 +402,7 @@ html {
     padding: 10px;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2);
     overflow-x: scroll;
+    justify-content: start;
   }
 
   .str-video__call-controls button {
